@@ -1,4 +1,6 @@
-export const users = [
+import { User } from '@/types';
+
+export const users: User[] = [
     { id: 1, username: "anna", email: "anna@example.com", avatar: "https://i.pravatar.cc/150?img=1", createdAt: "2025-08-30T10:00:00Z" },
     { id: 2, username: "ben", email: "ben@example.com", avatar: "https://i.pravatar.cc/150?img=2", createdAt: "2025-08-29T09:30:00Z" },
     { id: 3, username: "carla", email: "carla@example.com", avatar: "https://i.pravatar.cc/150?img=3", createdAt: "2025-08-28T08:15:00Z" },

@@ -1,4 +1,6 @@
-export const favorites = [
+import { Favorite } from '@/types';
+
+export const favorites: Favorite[] = [
     { userId: 2, recipeId: 1, createdAt: "2025-08-30T13:05:00Z" },
     { userId: 1, recipeId: 2, createdAt: "2025-08-30T14:00:00Z" },
     { userId: 3, recipeId: 3, createdAt: "2025-08-29T15:30:00Z" },

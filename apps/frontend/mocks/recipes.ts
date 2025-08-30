@@ -1,4 +1,6 @@
-export const recipes = [
+import { Recipe } from '@/types';
+
+export const recipes: Recipe[] = [
     {
         id: 1,
         title: "Spaghetti Carbonara",

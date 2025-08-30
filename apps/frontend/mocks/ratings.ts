@@ -1,4 +1,6 @@
-export const ratings = [
+import { Rating } from '@/types';
+
+export const ratings: Rating[] = [
     { userId: 1, recipeId: 1, score: 5, createdAt: "2025-08-30T12:30:00Z" },
     { userId: 2, recipeId: 1, score: 4, createdAt: "2025-08-30T13:00:00Z" },
     { userId: 3, recipeId: 2, score: 5, createdAt: "2025-08-29T14:30:00Z" },
