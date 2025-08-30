@@ -1,0 +1,25 @@
+{
+  "name": "foodieshare",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FoodieShare monorepo: Next.js frontend, TS Express backend, shared packages",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:frontend": "pnpm -C apps/frontend dev",
+    "dev:backend": "pnpm -C apps/backend dev",
+    "build:frontend": "pnpm -C apps/frontend build",
+    "build:backend": "pnpm -C apps/backend build",
+    "build": "pnpm -C apps/frontend build && pnpm -C apps/backend build",
+    "lint": "echo 'No root linter configured'",
+    "typecheck": "pnpm -C apps/frontend typecheck && pnpm -C apps/backend typecheck && pnpm -C packages/shared build"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "pnpm": ">=9"
+  }
+}
+
+
