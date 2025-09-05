@@ -11,26 +11,25 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "class-variance-authority": "0.7.0",
+    "clsx": "2.1.1",
+    "lucide-react": "0.441.0",
     "next": "14.2.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "class-variance-authority": "0.7.0",
-    "clsx": "2.1.1",
-    "tailwind-merge": "2.3.0",
-    "lucide-react": "0.441.0"
+    "tailwind-merge": "2.3.0"
   },
   "devDependencies": {
+    "@types/node": "24.3.0",
+    "@types/react": "19.1.12",
     "autoprefixer": "10.4.20",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.5",
     "postcss": "8.4.41",
     "tailwindcss": "3.4.10",
-    "typescript": "5.5.4",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.5"
-  }
-  ,
+    "typescript": "5.5.4"
+  },
   "optionalDependencies": {
     "@radix-ui/react-slot": "1.0.2"
   }
 }
-
-

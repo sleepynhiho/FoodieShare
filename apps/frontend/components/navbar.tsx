@@ -48,22 +48,39 @@ export function Navbar() {
           <NavLink href="/" active={pathname === "/"}>
             Home
           </NavLink>
-          <NavLink
-            href="/recipes"
-            active={pathname?.startsWith("/recipes")}
-          >
-            Recipes
+          <NavLink href="/recipes" active={pathname?.startsWith("/recipes")}>
+            <div className="relative group">
+              <span>Recipes</span>
+              <div className="absolute left-0 top-full z-20 bg-white shadow-lg rounded-xl p-2 mt-2 min-w-[160px] hidden group-hover:block">
+                {[
+                  "All",
+                  "MainDish",
+                  "SideDish",
+                  "Dessert",
+                  "Soup",
+                  "Salad",
+                  "Appetizer",
+                  "Beverage",
+                ].map((cat) => (
+                  <Link
+                    key={cat}
+                    href={
+                      cat === "All" ? "/recipes" : `/recipes?category=${cat}`
+                    }
+                    className="block px-4 py-2 text-left w-full hover:bg-orange-100 rounded text-sm"
+                  >
+                    {cat === "All"
+                      ? "All"
+                      : cat.replace(/([A-Z])/g, " $1").trim()}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </NavLink>
-          <NavLink
-            href="/add-recipe"
-            active={pathname === "/add-recipe"}
-          >
+          <NavLink href="/add-recipe" active={pathname === "/add-recipe"}>
             Add Recipe
           </NavLink>
-          <NavLink
-            href="/my-collection"
-            active={pathname === "/my-collection"}
-          >
+          <NavLink href="/my-collection" active={pathname === "/my-collection"}>
             My Collection
           </NavLink>
         </nav>
@@ -72,7 +89,10 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {/* Desktop: Sign in button */}
           <div className="hidden sm:block">
-            <Button size="sm" className="bg-black text-white border hover:bg-gray-900">
+            <Button
+              size="sm"
+              className="bg-black text-white border hover:bg-gray-900"
+            >
               Sign in
             </Button>
           </div>
