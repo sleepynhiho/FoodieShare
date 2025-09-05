@@ -5,7 +5,6 @@ export interface Ingredient {
     name: string;
     quantity?: number;
     unit?: string;
-    note?: string; // Optional note for ingredients like "salt to taste"
 }
 
 export interface RecipeStep {
