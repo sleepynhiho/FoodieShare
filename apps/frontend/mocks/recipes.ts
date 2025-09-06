@@ -1,4 +1,4 @@
-import { Recipe } from '@/types';
+import { Recipe } from "@/types";
 
 export const recipes: Recipe[] = [
     {
@@ -16,8 +16,8 @@ export const recipes: Recipe[] = [
             { name: "Eggs", quantity: 2, unit: "pcs" },
             { name: "Parmesan Cheese", quantity: 50, unit: "g" },
             { name: "Bacon", quantity: 100, unit: "g" },
-            { name: "Salt", note: "to taste" },
-            { name: "Black Pepper", note: "to taste" }
+            { name: "Salt", quantity: 1, unit: "tsp" },
+            { name: "Black Pepper", quantity: 1, unit: "tsp" }
         ],
         steps: [
             { title: "Boil pasta", description: "Cook spaghetti in salted boiling water until al dente (8–10 mins)." },
@@ -101,7 +101,7 @@ export const recipes: Recipe[] = [
             { name: "Garlic", quantity: 2, unit: "cloves" },
             { name: "Vegetable Stock", quantity: 500, unit: "ml" },
             { name: "Olive Oil", quantity: 1, unit: "tbsp" },
-            { name: "Salt", note: "to taste" }
+            { name: "Salt", quantity: 1, unit: "tsp" }
         ],
         steps: [
             { title: "Prepare vegetables", description: "Chop tomatoes, onion, and garlic." },

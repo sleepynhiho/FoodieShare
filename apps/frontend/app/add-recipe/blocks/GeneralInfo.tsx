@@ -72,7 +72,7 @@ const GeneralInformation = React.forwardRef<GeneralInfoRef, Props>(
     }));
 
     return (
-      <Card className="md:shadow-md">
+      <Card className="md:shadow-md md:shadow-gray-100">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base text-text-muted uppercase">
             Recipe General Information

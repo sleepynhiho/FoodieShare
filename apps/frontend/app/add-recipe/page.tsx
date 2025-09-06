@@ -49,10 +49,10 @@ export default function NewRecipePage() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="outline">
+          {/* <Button type="button" variant="outline">
             <Eye className="mr-2 h-4 w-4" />
-            See preview
-          </Button>
+            Save for me
+          </Button> */}
           <Button type="submit" className="bg-amber-500 hover:bg-amber-500/90">
             Publish recipe
           </Button>

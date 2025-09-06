@@ -78,7 +78,7 @@ const Ingredients = React.forwardRef<IngredientsRef, Props>(
     }));
 
     return (
-      <Card className="md:shadow-md">
+      <Card className="md:shadow-md md:shadow-gray-100">
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="text-base text-text-muted uppercase">
             Recipe Details
@@ -179,7 +179,7 @@ const Ingredients = React.forwardRef<IngredientsRef, Props>(
           <Button
             type="button"
             variant="outline"
-            className="w-full border-border-primary text-text-primary hover:bg-bg-secondary hover:text-white"
+            className="w-full btnBorder-border-primary text-text-primary hover:bg-bg-secondary hover:text-white"
             onClick={add}
           >
             <Plus className="mr-2 h-4 w-4" /> Add ingredient

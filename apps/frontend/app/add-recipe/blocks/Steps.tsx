@@ -36,7 +36,7 @@ const Steps = React.forwardRef<StepsRef, Props>(({ initial }, ref) => {
   }));
 
   return (
-    <Card className="md:shadow-md">
+    <Card className="md:shadow-md md:shadow-gray-100">
       <CardContent className="space-y-3">
         <Label>Steps</Label>
 
@@ -90,7 +90,7 @@ const Steps = React.forwardRef<StepsRef, Props>(({ initial }, ref) => {
         <Button
           type="button"
           variant="outline"
-          className="w-full border-border-primary text-text-primary hover:bg-bg-secondary hover:text-white"
+          className="w-full btnBorder-border-primary text-text-primary hover:bg-bg-secondary hover:text-white"
           onClick={add}
         >
           <Plus className="mr-2 h-4 w-4" /> Add step
