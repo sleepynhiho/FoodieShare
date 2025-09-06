@@ -3,20 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { UtensilsCrossed, Menu } from "lucide-react";
+import { UtensilsCrossed, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NavLink = ({
   href,
   children,
   active,
+  onClick,
 }: {
   href: string;
   children: React.ReactNode;
   active?: boolean;
+  onClick?: () => void;
 }) => (
   <Link
     href={href}
+    onClick={onClick}
     className={cn(
       "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium uppercase",
       active ? "text-black font-bold" : "text-gray-600 hover:text-black"
@@ -28,6 +33,9 @@ const NavLink = ({
 
 export function Navbar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  const toggleSidebar = () => setOpen(!open);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-bg-default">
@@ -49,33 +57,7 @@ export function Navbar() {
             Home
           </NavLink>
           <NavLink href="/recipes" active={pathname?.startsWith("/recipes")}>
-            <div className="relative group">
-              <span>Recipes</span>
-              <div className="absolute left-0 top-full z-20 bg-white shadow-lg rounded-xl p-2 mt-2 min-w-[160px] hidden group-hover:block">
-                {[
-                  "All",
-                  "MainDish",
-                  "SideDish",
-                  "Dessert",
-                  "Soup",
-                  "Salad",
-                  "Appetizer",
-                  "Beverage",
-                ].map((cat) => (
-                  <Link
-                    key={cat}
-                    href={
-                      cat === "All" ? "/recipes" : `/recipes?category=${cat}`
-                    }
-                    className="block px-4 py-2 text-left w-full hover:bg-orange-100 rounded text-sm"
-                  >
-                    {cat === "All"
-                      ? "All"
-                      : cat.replace(/([A-Z])/g, " $1").trim()}
-                  </Link>
-                ))}
-              </div>
-            </div>
+            Recipes
           </NavLink>
           <NavLink href="/add-recipe" active={pathname === "/add-recipe"}>
             Add Recipe
@@ -96,12 +78,96 @@ export function Navbar() {
               Sign in
             </Button>
           </div>
-          {/* Mobile: Hamburger menu */}
-          <button className="md:hidden p-2 rounded-md hover:bg-bg-button">
+          {/* Mobile: Side menu button */}
+          <button
+            onClick={toggleSidebar}
+            className="md:hidden p-2 rounded-md hover:bg-bg-button"
+          >
             <Menu className="h-5 w-5" />
           </button>
         </div>
       </div>
+
+      {/* Sidebar (mobile) */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              key="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black z-40"
+              onClick={toggleSidebar}
+            />
+            {/* Panel */}
+            <motion.div
+              key="sidebar"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+              className="fixed right-0 top-0 bottom-0 z-50 w-64 bg-white shadow-lg p-4 flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 font-semibold text-lg"
+                  onClick={toggleSidebar}
+                >
+                  <UtensilsCrossed className="h-5 w-5" />
+                  <span>
+                    FOODIE<span className="text-text-primary">SHARE</span>
+                  </span>
+                </Link>
+                <button onClick={toggleSidebar} className="p-2">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <nav className="flex flex-col gap-2">
+                <NavLink
+                  href="/"
+                  active={pathname === "/"}
+                  onClick={toggleSidebar}
+                >
+                  Home
+                </NavLink>
+                <NavLink
+                  href="/recipes"
+                  active={pathname?.startsWith("/recipes")}
+                  onClick={toggleSidebar}
+                >
+                  Recipes
+                </NavLink>
+                <NavLink
+                  href="/add-recipe"
+                  active={pathname === "/add-recipe"}
+                  onClick={toggleSidebar}
+                >
+                  Add Recipe
+                </NavLink>
+                <NavLink
+                  href="/my-collection"
+                  active={pathname === "/my-collection"}
+                  onClick={toggleSidebar}
+                >
+                  My Collection
+                </NavLink>
+              </nav>
+              <div className="mt-auto pt-4">
+                <Button
+                  size="sm"
+                  className="w-full bg-black text-white border hover:bg-gray-900"
+                >
+                  Sign in
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
