@@ -1,5 +1,5 @@
+import { Navbar } from "@/components/navbar";
 import "../styles/globals.css";
-import { Navbar } from "@/components/NavBar";
 
 export const metadata = {
   title: "FoodieShare",

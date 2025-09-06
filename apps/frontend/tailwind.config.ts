@@ -14,6 +14,7 @@ export default {
           default: "#fffefd", // body background
           card: "#ffffff",    // card / container
           button: "#f6f6f6",  // button background
+          secondary: "#ffa319",
           icon: "#fff7ecff"     // icon background
         },
         text: {
@@ -21,8 +22,11 @@ export default {
           default: "#111111", // main text
           muted: "#4B5563",   // gray text
         },
+        btnBorder: {
+          default: "#E5E7EB", // gray-200
+          primary: "#ffa319", // orange
+        },
         border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -37,10 +41,6 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
