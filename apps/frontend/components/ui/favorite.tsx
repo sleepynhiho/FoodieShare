@@ -14,8 +14,11 @@ export default function Favorite({ isFavorited = false, toggleFavorite }: Favori
         icon={Heart}
         active={isFavorited}
         color={[239, 68, 68]} // red-500
-        onClick={toggleFavorite}
         size="md"
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation();
+          toggleFavorite();
+        }}
       />
       {/* <span className="text-xs text-text-muted">{favoriteCount}</span> */}
     </div>

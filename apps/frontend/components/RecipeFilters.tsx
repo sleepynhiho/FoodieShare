@@ -1,4 +1,6 @@
 import React from "react";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 
 interface RecipeFiltersProps {
   filters: {
@@ -37,65 +39,59 @@ export const RecipeFilters: React.FC<RecipeFiltersProps> = ({
   const maxPrep = maxPrepTime ?? 180;
 
   return (
-    <div className="space-y-8 p-4 bg-white rounded-xl shadow-md">
-      {/* Cooking Time */}
+    <div className="space-y-8 p-4 bg-white rounded-xl shadow-md min-w-[162px]">
+      {/* Cooking Time (rc-slider double handle) */}
       <div>
-        <label className="block font-bold mb-2 text-lg">Cooking Time</label>
+        <label className="block font-medium mb-2 text-base">Cooking Time</label>
         <div className="flex flex-col gap-2 items-center">
-          <div className="w-full flex gap-2 items-center">
-            <input
-              type="range"
-              min={0}
-              max={maxCook}
-              value={filters.minCookTime}
-              onChange={(e) =>
-                onChange({ minCookTime: Number(e.target.value) })
+          <Slider
+            range
+            min={0}
+            max={maxCook}
+            value={[filters.minCookTime, filters.maxCookTime]}
+            onChange={(val) => {
+              if (Array.isArray(val)) {
+                const [min, max] = val;
+                onChange({ minCookTime: min, maxCookTime: max });
               }
-              className="w-full accent-orange-400"
-            />
-            <input
-              type="range"
-              min={0}
-              max={maxCook}
-              value={filters.maxCookTime}
-              onChange={(e) =>
-                onChange({ maxCookTime: Number(e.target.value) })
-              }
-              className="w-full accent-orange-400"
-            />
-          </div>
+            }}
+            trackStyle={[{ backgroundColor: "#ffa319" }]}
+            handleStyle={[
+              { borderColor: "#ffa319", backgroundColor: "#ffa319" },
+              { borderColor: "#ffa319", backgroundColor: "#ffa319" },
+            ]}
+            railStyle={{ backgroundColor: "#dde1e4" }}
+          />
           <div className="flex justify-between w-full text-xs mt-1">
             <span>{filters.minCookTime} mins</span>
             <span>{filters.maxCookTime} mins</span>
           </div>
         </div>
       </div>
-      {/* Preparation Time */}
+      {/* Preparation Time (rc-slider double handle) */}
       <div>
-        <label className="block font-bold mb-2 text-lg">Preparation Time</label>
+        <label className="block font-medium mb-2 text-base">
+          Preparation Time
+        </label>
         <div className="flex flex-col gap-2 items-center">
-          <div className="w-full flex gap-2 items-center">
-            <input
-              type="range"
-              min={0}
-              max={maxPrep}
-              value={filters.minPrepTime}
-              onChange={(e) =>
-                onChange({ minPrepTime: Number(e.target.value) })
+          <Slider
+            range
+            min={0}
+            max={maxPrep}
+            value={[filters.minPrepTime, filters.maxPrepTime]}
+            onChange={(val) => {
+              if (Array.isArray(val)) {
+                const [min, max] = val;
+                onChange({ minPrepTime: min, maxPrepTime: max });
               }
-              className="w-full accent-orange-400"
-            />
-            <input
-              type="range"
-              min={0}
-              max={maxPrep}
-              value={filters.maxPrepTime}
-              onChange={(e) =>
-                onChange({ maxPrepTime: Number(e.target.value) })
-              }
-              className="w-full accent-orange-400"
-            />
-          </div>
+            }}
+            trackStyle={[{ backgroundColor: "#ffa319" }]}
+            handleStyle={[
+              { borderColor: "#ffa319", backgroundColor: "#ffa319" },
+              { borderColor: "#ffa319", backgroundColor: "#ffa319" },
+            ]}
+            railStyle={{ backgroundColor: "#dde1e4" }}
+          />
           <div className="flex justify-between w-full text-xs mt-1">
             <span>{filters.minPrepTime} mins</span>
             <span>{filters.maxPrepTime} mins</span>
@@ -104,97 +100,113 @@ export const RecipeFilters: React.FC<RecipeFiltersProps> = ({
       </div>
       {/* Difficulty */}
       <div>
-        <label className="block font-bold mb-2 text-lg">Difficulty</label>
-        <div className="flex gap-2 flex-wrap">
-          {DIFFICULTY.map((dif) => (
-            <button
-              key={dif}
-              type="button"
-              className={`px-4 py-2 rounded-full border font-semibold text-sm transition-colors
-                ${
-                  filters.difficulty.includes(dif)
-                    ? "bg-orange-400 text-white border-orange-400"
-                    : "bg-white text-gray-700 border-gray-300"
-                }`}
-              onClick={() => {
-                const checked = !filters.difficulty.includes(dif);
-                onChange({
-                  difficulty: checked
-                    ? [...filters.difficulty, dif]
-                    : filters.difficulty.filter((d) => d !== dif),
-                });
-              }}
-            >
-              {dif}
-            </button>
-          ))}
+        <label className="block font-medium mb-2 text-base">Difficulty</label>
+        <div className="flex flex-col w-full">
+          {DIFFICULTY.map((dif) => {
+            const checked = filters.difficulty.includes(dif);
+            return (
+              <label
+                key={dif}
+                className="flex items-center gap-2 cursor-pointer select-none mb-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => {
+                    onChange({
+                      difficulty: !checked
+                        ? [...filters.difficulty, dif]
+                        : filters.difficulty.filter((d) => d !== dif),
+                    });
+                  }}
+                  className="hidden"
+                />
+                <span
+                  className={`w-6 h-6 flex items-center justify-center rounded border transition-colors ${
+                    checked
+                      ? "bg-[#ffa319] border-[#ffa319]"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  {checked && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="white"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086l-3.793-3.793a1 1 0 00-1.414 1.414l4.5 4.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </span>
+                <span className="text-xs font-normal">{dif}</span>
+              </label>
+            );
+          })}
         </div>
       </div>
       {/* Rating */}
       <div>
-        <label className="block font-bold mb-2 text-lg">Rating</label>
-        <div className="flex gap-2 flex-wrap">
-          {RATINGS.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={`w-10 h-10 rounded-full border flex items-center justify-center font-bold text-sm transition-colors
-                ${
-                  filters.rating.includes(r)
-                    ? "bg-yellow-400 text-white border-yellow-400"
-                    : "bg-white text-gray-700 border-gray-300"
-                }`}
-              onClick={() => {
-                const checked = !filters.rating.includes(r);
-                onChange({
-                  rating: checked
-                    ? [...filters.rating, r]
-                    : filters.rating.filter((val) => val !== r),
-                });
-              }}
-            >
-              {r === 0 ? "<1" : r === 5 ? "5" : `${r}+`}
-            </button>
-          ))}
-        </div>
-      </div>
-      {/* Sort */}
-      <div className="flex gap-4 items-end flex-wrap md:flex-nowrap">
-        <div>
-          <label className="block font-bold mb-2 text-lg">Sort By</label>
-          <select
-            value={filters.sortBy}
-            onChange={(e) => onChange({ sortBy: e.target.value })}
-            className="border rounded px-2 py-1"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block font-bold mb-2 text-lg">Order</label>
-          <select
-            value={filters.sortOrder || "desc"}
-            onChange={(e) =>
-              onChange({ sortOrder: e.target.value as "asc" | "desc" })
-            }
-            className="border rounded px-2 py-1"
-          >
-            {SORT_ORDER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+        <label className="block font-medium mb-2 text-base">Rating</label>
+        {/* Mobile: 1 cột, md trở lên: 2 cột */}
+        <div className="flex flex-col w-full md:grid md:grid-cols-2 md:gap-2">
+          {RATINGS.map((r) => {
+            const checked = filters.rating.includes(r);
+            return (
+              <label
+                key={r}
+                className="flex items-center gap-2 cursor-pointer select-none mb-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => {
+                    onChange({
+                      rating: !checked
+                        ? [...filters.rating, r]
+                        : filters.rating.filter((val) => val !== r),
+                    });
+                  }}
+                  className="hidden"
+                />
+                <span
+                  className={`w-6 h-6 flex items-center justify-center rounded border transition-colors ${
+                    checked
+                      ? "bg-[#ffa319] border-[#ffa319]"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  {checked && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="white"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086l-3.793-3.793a1 1 0 00-1.414 1.414l4.5 4.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </span>
+                <span className="text-xs font-normal">
+                  {r === 0 ? "< 1 star" : r === 5 ? "5 stars" : `${r} stars  `}
+                </span>
+              </label>
+            );
+          })}
         </div>
       </div>
       {/* Clear Filters */}
       <button
         type="button"
-        className="mt-4 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-semibold"
+        className="mt-4 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 font-normal text-sm"
         onClick={onClear}
       >
         Clear Filters
