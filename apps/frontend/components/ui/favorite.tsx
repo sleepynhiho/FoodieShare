@@ -7,7 +7,10 @@ interface FavoriteProps {
   // favoriteCount: number;
 }
 
-export default function Favorite({ isFavorited = false, toggleFavorite }: FavoriteProps) {
+export default function Favorite({
+  isFavorited = false,
+  toggleFavorite,
+}: FavoriteProps) {
   return (
     <div className="flex flex-col items-center">
       <IconButton
@@ -22,5 +25,5 @@ export default function Favorite({ isFavorited = false, toggleFavorite }: Favori
       />
       {/* <span className="text-xs text-text-muted">{favoriteCount}</span> */}
     </div>
-  )
+  );
 }
