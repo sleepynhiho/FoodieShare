@@ -1,3 +1,9 @@
+// NOTE: Khi có login page, cần lưu ý các điểm sau:
+// 1. Chỉ hiển thị bộ sưu tập của user đã đăng nhập:
+//    - Dữ liệu sẽ lấy theo user hiện tại
+//    - Nếu chưa đăng nhập, chuyển hướng sang trang login hoặc báo "đăng nhập để xem bộ sưu tập".
+// 2. API hoặc mock data sẽ dùng userId động:
+//    - Thay vì fix userId = 1, sẽ lấy userId từ thông tin đăng nhập.
 "use client";
 
 import { recipes } from "@/mocks/recipes";
@@ -29,11 +35,7 @@ export default function MyCollectionPage() {
         alt="Recipe list banner"
         className="w-full h-64 object-cover mb-5 rounded-xl object-[70%_70%] md:object-center"
       />
-      <div className="w-full flex justify-center items-center">
-        <h1 className="text-4xl font-bold mb-8 px-8 pt-8 text-center">
-          Find Your Dish Here
-        </h1>
-      </div>
+      <div className="w-full flex justify-center items-center"></div>
       <div className="p-4">
         <h2 className="text-2xl font-bold mb-10">My Recipes</h2>
         <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
