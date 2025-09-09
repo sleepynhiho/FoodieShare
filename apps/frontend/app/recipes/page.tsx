@@ -141,9 +141,8 @@ export default function RecipesPage() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row w-full">
-        {/* RecipeFilters sidebar */}
-        <aside className="w-1/5 max-w-xs mb-6 mr-8 px-4">
+      <div className="flex flex-col md:flex-row">
+        <aside className="w-1/5 md:max-w-xs md:mb-0 md:mr-8 mb-6 px-4">
           <RecipeFilters
             filters={filters}
             maxCookTime={maxCookTime}
@@ -154,8 +153,7 @@ export default function RecipesPage() {
             onClear={() => setFilters({ ...defaultFilters })}
           />
         </aside>
-        {/* Content*/}
-        <div className="w-full md:flex-1 md:px-4">
+        <div className=" md:flex-1 md:px-4">
           {/* Sort UI */}
           <div className="flex gap-4 items-end flex-wrap md:flex-nowrap mb-4">
             <div>
@@ -255,7 +253,7 @@ export default function RecipesPage() {
             </div>
           </div>
 
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
+          <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
             {paginatedRecipes.length === 0 ? (
               <div className="col-span-4 text-gray-500">No recipes found.</div>
             ) : (

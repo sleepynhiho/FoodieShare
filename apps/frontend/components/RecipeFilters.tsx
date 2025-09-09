@@ -39,7 +39,7 @@ export const RecipeFilters: React.FC<RecipeFiltersProps> = ({
   const maxPrep = maxPrepTime ?? 180;
 
   return (
-    <div className="space-y-8 p-4 bg-white rounded-xl shadow-md min-w-[162px]">
+    <div className="space-y-8 p-4 bg-white rounded-xl shadow-md min-w-[150px]">
       {/* Cooking Time (rc-slider double handle) */}
       <div>
         <label className="block font-medium mb-2 text-base">Cooking Time</label>
