@@ -142,7 +142,7 @@ export default function RecipesPage() {
       </div>
 
       <div className="flex flex-col md:flex-row">
-        <aside className="w-1/5 md:max-w-xs md:mb-0 md:mr-8 mb-6 px-4">
+        <aside className="w-1/5 hidden md:block md:max-w-xs md:mb-0 md:mr-8 mb-6 px-4 ">
           <RecipeFilters
             filters={filters}
             maxCookTime={maxCookTime}
@@ -153,14 +153,15 @@ export default function RecipesPage() {
             onClear={() => setFilters({ ...defaultFilters })}
           />
         </aside>
-        <div className=" md:flex-1 md:px-4">
+        <div className=" flex-1 md:px-4">
           {/* Sort UI */}
-          <div className="flex gap-4 items-end flex-wrap md:flex-nowrap mb-4">
-            <div>
-              <div className="relative inline-block w-full">
+          <div className="flex gap-4 items-end flex-wrap md:flex-nowrap mb-4 justify-center md:justify-start">
+            <div className="relative flex items-center">
+              {/* Sort by */}
+              <div className="inline-block w-full">
                 <button
                   type="button"
-                  className="w-full flex justify-between items-center px-5 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
+                  className="flex-row flex justify-between items-center px-4 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
                   onClick={() => setShowSortDropdown((prev) => !prev)}
                 >
                   <span>Sort by: {filters.sortBy || "Star"}</span>
@@ -179,7 +180,7 @@ export default function RecipesPage() {
                   </svg>
                 </button>
                 {showSortDropdown && (
-                  <div className="absolute left-0 mt-1 w-full bg-white shadow-lg z-10 border">
+                  <div className=" mt-1 w-full bg-white shadow-lg z-10 border">
                     {["Star", "Time", "Title"].map((option) => (
                       <button
                         key={option}
@@ -200,12 +201,11 @@ export default function RecipesPage() {
                   </div>
                 )}
               </div>
-            </div>
-            <div>
-              <div className="relative inline-block w-full">
+              {/* Sort order */}
+              <div className="inline-block w-full ml-2">
                 <button
                   type="button"
-                  className="w-full flex justify-between items-center px-5 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
+                  className="flex-row flex justify-between items-center px-5 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
                   onClick={() => setShowOrderDropdown((prev) => !prev)}
                 >
                   <span>
@@ -250,10 +250,71 @@ export default function RecipesPage() {
                   </div>
                 )}
               </div>
+              {/* Icon filter chỉ hiện trên mobile */}
+              <div className="ml-2 md:hidden">
+                <button
+                  className="flex items-center px-3 py-2 rounded-full border bg-white shadow-sm"
+                  onClick={() => setShowFilter((prev) => !prev)}
+                  aria-label="Open filters"
+                >
+                  <svg
+                    className="w-5 h-5 text-gray-700"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-6.414 6.414A1 1 0 0013 13.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 017 17V13.414a1 1 0 00-.293-.707L3.293 6.707A1 1 0 013 6V4z"
+                    />
+                  </svg>
+                </button>
+                {/* Modal filter dropdown cố định vị trí so với icon */}
+                {showFilter && (
+                  <>
+                    {/* Overlay đen mờ phủ toàn màn hình, chỉ hiện trên mobile */}
+                    <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"></div>
+                    {/* Modal filter dropdown cố định vị trí so với icon */}
+                    <div className="absolute right-0 top-full mt-2 z-50 w-[50vw] max-w-xs bg-white rounded-xl shadow-lg p-4 border flex flex-col overflow-auto">
+                      <button
+                        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+                        onClick={() => setShowFilter(false)}
+                        aria-label="Đóng bộ lọc"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                      <h2 className="text-lg font-semibold mb-4">Filter</h2>
+                      <RecipeFilters
+                        filters={filters}
+                        maxCookTime={maxCookTime}
+                        maxPrepTime={maxPrepTime}
+                        onChange={(update) =>
+                          setFilters((prev) => ({ ...prev, ...update }))
+                        }
+                        onClear={() => setFilters({ ...defaultFilters })}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
+          <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5 justify-center md:justify-start">
             {paginatedRecipes.length === 0 ? (
               <div className="col-span-4 text-gray-500">No recipes found.</div>
             ) : (
