@@ -42,13 +42,13 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
 
   return (
     <div className="block group cursor-pointer" onClick={handleCardClick}>
-      <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden [min-height:100px][max-height:370px]">
+      <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
         <div className="aspect-w-4 aspect-h-3 bg-gray-100">
           {recipe.image ? (
             <img
               src={recipe.image}
               alt={recipe.title}
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+              className="object-cover group-hover:scale-105 transition-transform"
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
