@@ -20,12 +20,9 @@ export default function AuthLayout({
         {/* Logo */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 font-semibold text-lg mt-6 xl:mt-8 xl:ml-8"
+          className="inline-flex items-center gap-2 font-semibold text-lg mt-2 xl:mt-6 xl:ml-8"
         >
-          <UtensilsCrossed className="h-5 w-5" />
-          <span>
-            FOODIE<span className="text-text-primary">SHARE</span>
-          </span>
+          <img src="/logo.png" alt="FoodieShare-logo" className="h-12 w-auto" />
         </Link>
 
         {/* Form SignUp or Login */}
