@@ -1,100 +1,147 @@
-.envelope-button {
-  width: 80px;
-  height: 60px;
+@keyframes rays {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
 }
 
-.envelope-button.open {
-  display: none;
+@keyframes sparkle {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
-.envelope-button.close {
-  display: block;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-.envelope-container {
-  position: relative;
-  transition: all 0.5s ease;
-  transform: scale(4); 
-  margin: 0 auto;
-  width: 80px;
+@keyframes title-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.envelope {
-  position: relative;
-  width: 80px;
-  height: 60px;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-  background-color: #ffa319;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
+@keyframes text-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.front {
-  position: absolute;
-  width: 0;
-  height: 0;
-  z-index: 3;
+@keyframes fade-in-with-bounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  70% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.flap {
-  border-left: 40px solid transparent;
-  border-right: 40px solid transparent;
-  border-bottom: 22px solid transparent;
-  border-top: 38px solid #e68c00;
-  transform-origin: top;
-  pointer-events: none;
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.pocket {
-  border-left: 40px solid #ffb347;
-  border-right: 40px solid #ffb347;
-  border-bottom: 30px solid #ffb042;
-  border-top: 30px solid transparent;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
+@keyframes button-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.open .flap {
-  transform: rotateX(180deg);
-  transition: transform .4s ease, z-index .6s;
-  z-index: 1;
+.animate-fade-in {
+  animation: fade-in 0.3s forwards;
 }
 
-.close .flap {
-  transform: rotateX(0deg);
-  transition: transform .4s .6s ease, z-index 1s;
-  z-index: 5;
+.animate-title-reveal {
+  animation: title-reveal 0.4s forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
 }
 
-.recipe-card {
-  position: absolute;
-  background-color: #fffefd;
-  border-radius: 6px;
-  box-shadow: 0 2px 26px rgba(0, 0, 0, .12);
-  z-index: 2;
+.animate-text-reveal {
+  animation: text-reveal 0.4s forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
 }
 
-/* .recipe-card:after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-image:
-    linear-gradient(180deg,
-      rgba(255, 255, 255, 0.00) 25%,
-      rgba(255, 243, 224, 0.70) 55%,
-      rgba(255, 243, 224, 1.00) 100%);
-  border-radius: 6px;
-} */
-
-.recipe-card.card-close {
-  transform: translateY(0);
-  transition: transform .4s ease, opacity .4s ease;
+.animate-fade-in-delay {
+  animation: fade-in 0.4s forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
 }
 
-.recipe-card.card-open {
-  transform: translateY(-60px);
-  transition: transform .4s ease, opacity .4s ease;
+.animate-fade-in-with-bounce {
+  animation: fade-in-with-bounce 0.4s forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.animate-button-reveal {
+  animation: button-reveal 0.4s forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+.animate-rays {
+  animation: rays 1s infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s infinite;
 }
