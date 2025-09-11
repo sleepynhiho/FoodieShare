@@ -1,0 +1,24 @@
+* [33mba4df52[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mxuan/refine_recipe_list[m[33m, [m[1;31morigin/xuan/refine_recipe_list[m[33m)[m Add my-collection-page fix ui recipe-list
+* [33m37d4ac4[m Update favorite component
+* [33ma07c96f[m Refine recipe list page. Fixed #2
+*   [33mc6e8412[m[33m ([m[1;32mmain[m[33m)[m Merge pull request #6 from sleepynhiho/chi/add-recipe
+[32m|[m[33m\[m  
+[32m|[m *   [33m56d70cb[m merge branch origin/main into chi/add-recipe
+[32m|[m [34m|[m[32m\[m  
+[32m|[m [34m|[m[32m/[m  
+[32m|[m[32m/[m[34m|[m   
+* [34m|[m [33mc9b9325[m chore: add dependencies
+* [34m|[m [33mf3cda97[m feat: add side bar nav for mobile
+* [34m|[m   [33mf0b6dbb[m Merge pull request #5 from sleepynhiho/huyen/recipe-detail
+[36m|[m[1;31m\[m [34m\[m  
+[36m|[m * [34m|[m [33m1f29a45[m feat: create recipes detail page ui and connect to mock data, closes #3
+[36m|[m * [34m|[m [33md90ffb8[m chore: delete notes field
+[36m|[m * [34m|[m [33m3396bc1[m chore: config shadcn/ui
+[36m|[m[36m/[m [34m/[m  
+* [34m|[m [33m7c2cddb[m feat(recipes): create Recipes Page UI and connect to mock data, closes #2
+[1;31m|[m * [33md6e1889[m create Add Recipe Page UI and connect to mock data
+[1;31m|[m[1;31m/[m  
+* [33me875eb6[m feat: add interfaces
+* [33m0ae0691[m feat: add mock datas, closes #1
+* [33m6cf2aee[m feat: project setup with navbar
+* [33m8a6a709[m Initial commit
