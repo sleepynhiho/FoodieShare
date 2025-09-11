@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Recipe } from "@/types/recipe";
 import { users } from "@/mocks/users";
 import { ratings } from "@/mocks/ratings";
@@ -35,65 +36,62 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         ).toFixed(1)
       : "-";
 
-  // Xử lý click card chuyển hướng
-  const handleCardClick = () => {
-    window.location.href = `/recipes/${recipe.id}`;
-  };
-
   return (
-    <div className="block group cursor-pointer" onClick={handleCardClick}>
-      <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-        <div className="aspect-w-4 aspect-h-3 bg-gray-100">
-          {recipe.image ? (
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="object-cover group-hover:scale-105 transition-transform"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              No Image
-            </div>
-          )}
-        </div>
-        <div className="p-4 flex flex-col h-[180px]">
-          <h2 className="text-lg font-semibold mb-1 truncate">
-            {recipe.title}
-          </h2>
-          <p className="text-sm text-gray-500 mb-2 line-clamp-2 h-[40px]">
-            {recipe.description}
-          </p>
-          <div className="flex items-center justify-between text-xs text-gray-400">
-            <span>⏱ {recipe.prepTime + recipe.cookTime} min</span>
-            <span className="flex items-center">
-              {author && author.avatar && (
-                <img
-                  src={author.avatar}
-                  alt={author.username}
-                  className="w-6 h-6 rounded-full mr-2 inline-block"
-                />
-              )}
-              {author ? author.username : "Unknown"}
-            </span>
-          </div>
-          <div className="flex items-center justify-between mt-2">
-            <span className="flex items-center gap-1 text-yellow-500">
-              <StarIcon /> {averageRating}
-            </span>
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFavorite();
-              }}
-            >
-              <Favorite
-                isFavorited={isFavorited}
-                toggleFavorite={onToggleFavorite}
+    <Link href={`/recipes/${recipe.id}`}>
+      <div className="block group cursor-pointer">
+        <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+          <div className="aspect-w-4 aspect-h-3 bg-gray-100">
+            {recipe.image ? (
+              <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="object-cover group-hover:scale-105 transition-transform"
               />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                No Image
+              </div>
+            )}
+          </div>
+          <div className="p-4 flex flex-col h-[180px]">
+            <h2 className="text-lg font-semibold mb-1 truncate">
+              {recipe.title}
+            </h2>
+            <p className="text-sm text-gray-500 mb-2 line-clamp-2 h-[40px]">
+              {recipe.description}
+            </p>
+            <div className="flex items-center justify-between text-xs text-gray-400">
+              <span>⏱ {recipe.prepTime + recipe.cookTime} min</span>
+              <span className="flex items-center">
+                {author && author.avatar && (
+                  <img
+                    src={author.avatar}
+                    alt={author.username}
+                    className="w-6 h-6 rounded-full mr-2 inline-block"
+                  />
+                )}
+                {author ? author.username : "Unknown"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="flex items-center gap-1 text-yellow-500">
+                <StarIcon /> {averageRating}
+              </span>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite();
+                }}
+              >
+                <Favorite
+                  isFavorited={isFavorited}
+                  toggleFavorite={onToggleFavorite}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
