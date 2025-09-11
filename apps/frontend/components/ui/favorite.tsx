@@ -3,12 +3,13 @@ import { Heart } from "lucide-react";
 
 interface FavoriteProps {
   isFavorited: boolean;
+  favoriteCount: number;
   toggleFavorite: () => void;
-  // favoriteCount: number;
 }
 
 export default function Favorite({
   isFavorited = false,
+  favoriteCount = 0,
   toggleFavorite,
 }: FavoriteProps) {
   return (
@@ -23,7 +24,7 @@ export default function Favorite({
           toggleFavorite();
         }}
       />
-      {/* <span className="text-xs text-text-muted">{favoriteCount}</span> */}
+      <span className="text-xs text-text-muted font-bold">{favoriteCount}</span>
     </div>
   );
 }

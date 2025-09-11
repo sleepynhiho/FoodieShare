@@ -5,21 +5,24 @@ import { Soup, User, Clock, ChefHat, Star, HandPlatter } from "lucide-react";
 import Favorite from "@/components/ui/favorite";
 import RecipeAvgRating from "@/components/ui/avg-rating";
 import { recipes } from "@/mocks/recipes";
+import { favorites } from "@/mocks/favorites";
+import { ratings } from "@/mocks/ratings";
 import { users } from "@/mocks/users";
 
 interface RecipePageProps {
   params: { 
-    id: string;
-    avgRating?: number;
-    ratingCount?: number;
-    isFavorited?: boolean;
-    favoriteCount?: number;
+    id: string
   };
 }
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
-  const [isFavorited, setIsFavorited] = useState(params.isFavorited || false);
-  // const [favoriteCount, setFavoriteCount] = useState(params.favoriteCount || 0);
+  const isFavoritedByUser = favorites.find((favorite) => favorite.userId === 1 && favorite.recipeId === parseInt(params.id, 10)) 
+  const numberOfFavorites = favorites.filter((favorite) => favorite.recipeId === parseInt(params.id, 10)).length
+  const recipeRatings = ratings.filter((rating) => rating.recipeId === parseInt(params.id, 10))
+  const avgRating = Math.round((recipeRatings.reduce((acc, curr) => acc + curr.score, 0) / recipeRatings.length * 10)) / 10
+
+  const [isFavorited, setIsFavorited] = useState(isFavoritedByUser ? true : false);
+  const [favoriteCount, setFavoriteCount] = useState(numberOfFavorites || 0);
 
   const recipe = recipes.find(r => r.id === parseInt(params.id, 10));
 
@@ -45,7 +48,8 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
   }
 
   const toggleFavorite = () => {
-    setIsFavorited((prev) => !prev)
+    setIsFavorited((prev) => !prev); 
+    setFavoriteCount((prevCount) => isFavorited ? prevCount - 1 : prevCount + 1);
   };
 
   const recipeFields = ["Category", "Servings", "Prep Time", "Cook Time", "Difficulty", getAuthorNameById(recipe?.authorId || 0)]; 
@@ -71,22 +75,31 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
   return (
     <main className="px-4">
       {/* Recipe Image */}
-      <img
-        src={recipe?.image}
-        alt={recipe?.description}
-        className="w-full h-auto rounded-lg mb-6"
-      />
+      <div className="relative w-full rounded-lg overflow-hidden mb-6">
+        <img
+          src={recipe?.image}
+          alt={recipe?.description}
+          className="w-full max-h-96 object-cover rounded-xl object-[70%_70%] md:object-center"
+        />
+        <div
+          className={`
+            absolute top-2 left-2 ml-2 mt-2 bg-white hover:bg-white transition p-1 rounded-full shadow-lg cursor-pointer 
+          `}
+          style={{ width: "10%", aspectRatio: "1 / 1", minWidth: "32px", maxWidth: "48px" }}
+        >
+          <Favorite
+            isFavorited={isFavorited}
+            toggleFavorite={toggleFavorite}
+            favoriteCount={favoriteCount}
+          />
+        </div>
+      </div>
 
       <div className="flex flex-col justify-center items-center gap-4 mb-6">
         <h1 className="text-3xl text-center font-bold">{recipe?.title}</h1>
-        <RecipeAvgRating 
-          avgRating={params?.avgRating || 0} 
-          ratingCount={params?.ratingCount || 0}
-        />
-        <Favorite
-          isFavorited={isFavorited}
-          toggleFavorite={toggleFavorite}
-          // favoriteCount={favoriteCount}
+        <RecipeAvgRating
+          avgRating={avgRating || 0}
+          ratingCount={recipeRatings.length || 0}
         />
       </div>
 
@@ -100,7 +113,10 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         md:[grid-template-columns:repeat(3,fit-content(200px))] gap-4 mb-8"
       >
         {recipeFields.map((field, index) => (
-          <div key={index} className="grid grid-cols-[max-content_1fr] items-center justify-center gap-3">
+          <div
+            key={index}
+            className="grid grid-cols-[max-content_1fr] items-center justify-center gap-3"
+          >
             <div className="rounded-full bg-bg-icon p-2 w-8 h-8">
               {icons[index]}
             </div>
@@ -114,9 +130,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
 
       {/* Recipe Description */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold">
-          Description
-        </h2>
+        <h2 className="text-2xl font-bold">Description</h2>
         <p className="mt-2 text-text-muted">{recipe?.description}</p>
       </div>
 
@@ -129,7 +143,10 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
           <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
             <ul className="mt-4 space-y-4">
               {recipe?.ingredients.map((ingredient, index) => (
-                <li key={index} className="flex justify-between items-center gap-4">
+                <li
+                  key={index}
+                  className="flex justify-between items-center gap-4"
+                >
                   <h3 className="font-semibold">{ingredient.name}</h3>
                   <p className="text-text-muted">{`${ingredient.quantity}${ingredient.unit}`}</p>
                 </li>
@@ -139,7 +156,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         </div>
 
         {/* Cooking Instructions */}
-        <div className="md:max-w-[60vw]">
+        <div className="md:w-[50vw] lg:w-[60vw]">
           <h2 className="text-2xl font-bold inline-block mr-1.5">Cooking</h2>
           <h2 className="text-2xl font-bold text-text-primary inline-block">
             Instructions

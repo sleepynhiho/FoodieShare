@@ -22,16 +22,16 @@ export default function RecipeAvgRating({ avgRating = 0, ratingCount = 0 }: Reci
           // half star → overlay trick
           return (
             <div key={i} className="relative w-5 h-5">
-              <Star className="w-6 h-6 fill-gray-200 stroke-none" />
-              <div className="absolute top-0 left-0 w-1/2 overflow-hidden">
-                <Star className="w-6 h-6 fill-yellow-400 stroke-yellow-400" />
+              <Star className="absolute top-0 left-0 w-5 h-5 fill-gray-200 stroke-gray-200" />
+              <div className="absolute top-0 left-0 w-1/2 h-full overflow-hidden">
+                <Star className="w-5 h-5 fill-yellow-400 stroke-yellow-400" />
               </div>
             </div>
           )
         } else {
           // empty star
           return (
-            <Star key={i} className="w-6 h-6 fill-gray-200 stroke-none" />
+            <Star key={i} className="w-5 h-5 fill-gray-200 stroke-none" />
           )
         }
       })}

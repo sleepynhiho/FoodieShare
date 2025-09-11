@@ -62,60 +62,6 @@ function IconButton({
           className: active ? 'fill-[var(--icon-button-color)]' : 'fill-transparent'
         })}
       </motion.div>
- 
-      {/* <AnimatePresence mode="wait">
-        {active && (
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[var(--icon-button-color)] fill-[var(--icon-button-color)]"
-            aria-hidden="true"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            transition={transition}
-          >
-            {React.createElement(Icon as React.ComponentType<any>)}
-          </motion.div>
-        )}
-      </AnimatePresence> */}
- 
-      <AnimatePresence>
-        {animate && active && (
-          <>
-            <motion.div
-              className="absolute inset-0 z-10 rounded-full "
-              style={{
-                background: `radial-gradient(circle, rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.4) 0%, rgba(${color[0]}, ${color[1]}, ${color[2]}, 0) 70%)`,
-              }}
-              initial={{ scale: 1.2, opacity: 0 }}
-              animate={{ scale: [1.2, 1.8, 1.2], opacity: [0, 0.3, 0] }}
-              transition={{ duration: 1.2, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute inset-0 z-10 rounded-full"
-              style={{
-                boxShadow: `0 0 10px 2px rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.6)`,
-              }}
-              initial={{ scale: 1, opacity: 0 }}
-              animate={{ scale: [1, 1.5], opacity: [0.8, 0] }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-            />
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 rounded-full bg-[var(--icon-button-color)]"
-                initial={{ x: '50%', y: '50%', scale: 0, opacity: 0 }}
-                animate={{
-                  x: `calc(50% + ${Math.cos((i * Math.PI) / 3) * 30}px)`,
-                  y: `calc(50% + ${Math.sin((i * Math.PI) / 3) * 30}px)`,
-                  scale: [0, 1, 0],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{ duration: 0.8, delay: i * 0.05, ease: 'easeOut' }}
-              />
-            ))}
-          </>
-        )}
-      </AnimatePresence>
     </motion.button>
   );
 }
