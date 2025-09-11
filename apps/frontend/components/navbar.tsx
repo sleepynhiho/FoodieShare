@@ -72,12 +72,14 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {/* Desktop: Sign in button */}
           <div className="hidden sm:block">
-            <Button
-              size="sm"
-              className="bg-black text-white border hover:bg-gray-900"
-            >
-              Sign in
-            </Button>
+            <Link href="/login">
+              <Button
+                size="sm"
+                className="bg-black text-white border hover:bg-gray-900"
+              >
+                Sign in
+              </Button>
+            </Link>
           </div>
           {/* Mobile: Side menu button */}
           <button
@@ -158,12 +160,14 @@ export function Navbar() {
                 </NavLink>
               </nav>
               <div className="mt-auto pt-4">
-                <Button
-                  size="sm"
-                  className="w-full bg-black text-white border hover:bg-gray-900"
-                >
-                  Sign in
-                </Button>
+                <Link href="/login">
+                  <Button
+                    size="sm"
+                    className="w-full bg-black text-white border hover:bg-gray-900"
+                  >
+                    Sign in
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </>
