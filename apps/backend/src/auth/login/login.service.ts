@@ -16,8 +16,18 @@ export class LoginService {
       password: dto["password"],
     });
 
-    if (error) return null
+    if (error) {
+      // Return error details instead of just null
+      return { 
+        success: false, 
+        error: error.message,
+        errorCode: error.message.includes('Invalid login credentials') ? 'INVALID_CREDENTIALS' : 'LOGIN_ERROR'
+      };
+    }
 
-    return data; 
+    return { 
+      success: true, 
+      data 
+    }; 
   }
 }

@@ -30,11 +30,15 @@ export class SignupService {
       }
     });
 
-    await this.prisma.user.create({
-      data: {
-        email: dto["email"],
-      }
-    })
+    // Only create user in database if Supabase signup was successful and returned a user
+    if (data?.user) {
+      await this.prisma.user.create({
+        data: {
+          id: data.user.id, // Use Supabase user ID
+          email: dto["email"],
+        }
+      })
+    }
 
     return data;
   }

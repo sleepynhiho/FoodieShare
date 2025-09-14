@@ -42,9 +42,13 @@ export class AuthController {
   @HttpCode(200)
   async login(@Body() dto: LoginDto) {
     const res = await this.loginService.login(dto)
-    if (!res)
-      throw new UserNotFoundException("User does not exist!")
-    return res
+    if (!res.success) {
+      if (res.errorCode === 'INVALID_CREDENTIALS') {
+        throw new UserNotFoundException("Invalid login credentials!")
+      }
+      throw new ServerException(res.error || "Login failed!")
+    }
+    return res.data
   }
   
   @Post("logout")

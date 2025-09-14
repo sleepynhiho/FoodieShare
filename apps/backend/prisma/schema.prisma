@@ -28,19 +28,46 @@ model User {
 }
 
 model Recipe {
-  id          String     @id @default(uuid())
+  id          String           @id @default(uuid())
   title       String
   description String?
-  image       String
+  image       String?
   category    String
-  cookingTime Int
+  cookingTime Int              // cookTime in frontend
   prepTime    Int
+  servings    Int              @default(1)
+  difficulty  String           // "Easy", "Medium", "Hard"
+  ingredients RecipeIngredient[]
+  steps       RecipeStep[]
   userId      String
-  user        User       @relation(fields: [userId], references: [id])
+  user        User             @relation(fields: [userId], references: [id])
   favorites   Favorite[]
   ratings     Rating[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model RecipeIngredient {
+  id       String  @id @default(uuid())
+  name     String
+  quantity Float?
+  unit     String?
+  note     String?
+  recipeId String
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  @@map("recipe_ingredients")
+}
+
+model RecipeStep {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  order       Int    // step order in the recipe
+  recipeId    String
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  @@map("recipe_steps")
 }
 
 model Favorite {

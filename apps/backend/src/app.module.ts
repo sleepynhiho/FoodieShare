@@ -5,13 +5,15 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
+import { RecipesModule } from './recipes/recipes.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     EmailModule,
-    UsersModule
+    UsersModule,
+    RecipesModule
   ],
   controllers: [AppController],
   providers: [AppService]
