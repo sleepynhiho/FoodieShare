@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  avatar        String?
+  username      String?
+  recipes       Recipe[]
+  favorites     Favorite[]
+  ratings       Rating[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Recipe {
+  id          String           @id @default(uuid())
+  title       String
+  description String?
+  image       String?
+  category    String
+  cookingTime Int              // cookTime in frontend
+  prepTime    Int
+  servings    Int              @default(1)
+  difficulty  String           // "Easy", "Medium", "Hard"
+  ingredients RecipeIngredient[]
+  steps       RecipeStep[]
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
+  favorites   Favorite[]
+  ratings     Rating[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model RecipeIngredient {
+  id       String  @id @default(uuid())
+  name     String
+  quantity Float?
+  unit     String?
+  note     String?
+  recipeId String
+  recipe   Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  @@map("recipe_ingredients")
+}
+
+model RecipeStep {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  order       Int    // step order in the recipe
+  recipeId    String
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  
+  @@map("recipe_steps")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  recipeId  String
+  user      User     @relation(fields: [userId], references: [id])
+  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, recipeId])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  userId    String
+  recipeId  String
+  score     Int
+  user      User     @relation(fields: [userId], references: [id])
+  recipe    Recipe   @relation(fields: [recipeId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, recipeId]) // 1 user chỉ rate 1 recipe
+}

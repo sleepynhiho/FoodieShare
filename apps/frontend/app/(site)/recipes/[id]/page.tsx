@@ -1,0 +1,183 @@
+"use client";
+
+import { useState } from "react";
+import { Soup, User, Clock, ChefHat, Star, HandPlatter } from "lucide-react";
+import Favorite from "@/components/ui/favorite";
+import RecipeAvgRating from "@/components/ui/avg-rating";
+import { recipes } from "@/mocks/recipes";
+import { favorites } from "@/mocks/favorites";
+import { ratings } from "@/mocks/ratings";
+import { users } from "@/mocks/users";
+
+interface RecipePageProps {
+  params: { 
+    id: string
+  };
+}
+
+export default function RecipeDetailPage({ params }: RecipePageProps) {
+  const isFavoritedByUser = favorites.find((favorite) => favorite.userId === 1 && favorite.recipeId === parseInt(params.id, 10)) 
+  const numberOfFavorites = favorites.filter((favorite) => favorite.recipeId === parseInt(params.id, 10)).length
+  const recipeRatings = ratings.filter((rating) => rating.recipeId === parseInt(params.id, 10))
+  const avgRating = Math.round((recipeRatings.reduce((acc, curr) => acc + curr.score, 0) / recipeRatings.length * 10)) / 10
+
+  const [isFavorited, setIsFavorited] = useState(isFavoritedByUser ? true : false);
+  const [favoriteCount, setFavoriteCount] = useState(numberOfFavorites || 0);
+
+  const recipe = recipes.find(r => r.id === parseInt(params.id, 10));
+
+  const getAuthorNameById = (authorId: number) => {
+    const author = users.find(u => u.id === authorId);
+    const authorName = author ? author.username : "Unknown";
+    return authorName.charAt(0).toUpperCase() + authorName.slice(1);
+  }
+
+  const getNumberOfRecipesByAuthor = (authorId: number) => {
+    if (!authorId) return 0;
+    return recipes.filter(r => r.authorId === authorId).length;
+  }
+
+  const formatCategory = (category: string) => {
+    if (category.includes("Dish")) 
+      return category.replace("Dish", " Dish");
+    return category;
+  }
+
+  const formatRecipeCount = (count: number) => {
+    return count === 1 ? "1 Recipe" : `${count} Recipes`;
+  }
+
+  const toggleFavorite = () => {
+    setIsFavorited((prev) => !prev); 
+    setFavoriteCount((prevCount) => isFavorited ? prevCount - 1 : prevCount + 1);
+  };
+
+  const recipeFields = ["Category", "Servings", "Prep Time", "Cook Time", "Difficulty", getAuthorNameById(recipe?.authorId || 0)]; 
+
+  const icons = [
+    <Soup size={16} color="#ffa319" />, 
+    <HandPlatter size={16} color="#ffa319" />,
+    <Clock size={16} color="#ffa319" />, 
+    <ChefHat size={16} color="#ffa319" />, 
+    <Star size={16} color="#ffa319" />,
+    <User size={16} color="#ffa319" />
+  ];
+
+  const recipeValues = [
+    formatCategory(recipe?.category || ""), 
+    recipe?.servings === 1 ? "1 Person" : recipe?.servings + " People", 
+    recipe?.prepTime + " Minutes", 
+    recipe?.cookTime + " Minutes", 
+    recipe?.difficulty,
+    formatRecipeCount(getNumberOfRecipesByAuthor(recipe?.authorId || 0))
+  ];
+
+  return (
+    <main className="px-4">
+      {/* Recipe Image */}
+      <div className="relative w-full rounded-lg overflow-hidden mb-6">
+        <img
+          src={recipe?.image}
+          alt={recipe?.description}
+          className="w-full max-h-96 object-cover rounded-xl object-[70%_70%] md:object-center"
+        />
+        <div
+          className={`
+            absolute top-2 left-2 ml-2 mt-2 bg-white hover:bg-white transition p-1 rounded-full shadow-lg cursor-pointer 
+          `}
+          style={{ width: "10%", aspectRatio: "1 / 1", minWidth: "32px", maxWidth: "48px" }}
+        >
+          <Favorite
+            isFavorited={isFavorited}
+            toggleFavorite={toggleFavorite}
+            favoriteCount={favoriteCount}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col justify-center items-center gap-4 mb-6">
+        <h1 className="text-3xl text-center font-bold">{recipe?.title}</h1>
+        <RecipeAvgRating
+          avgRating={avgRating || 0}
+          ratingCount={recipeRatings.length || 0}
+        />
+      </div>
+
+      {/* Recipe Fields */}
+      <div
+        className="
+        grid 
+        grid-template-columns:repeat(2,fit-content(200px)) 
+        justify-center
+        xs:[grid-template-columns:repeat(2,fit-content(200px))] xs:justify-evenly
+        md:[grid-template-columns:repeat(3,fit-content(200px))] gap-4 mb-8"
+      >
+        {recipeFields.map((field, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-[max-content_1fr] items-center justify-center gap-3"
+          >
+            <div className="rounded-full bg-bg-icon p-2 w-8 h-8">
+              {icons[index]}
+            </div>
+            <div className="grid grid-rows-2">
+              <p className="text-sm text-gray-400">{field}</p>
+              <p className="text-base font-bold">{recipeValues[index]}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recipe Description */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold">Description</h2>
+        <p className="mt-2 text-text-muted">{recipe?.description}</p>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:justify-between md:gap-4">
+        {/* Ingredients */}
+        <div className="mb-8 flex-1">
+          <h2 className="text-2xl font-bold inline-block mr-1.5">
+            Ingredients
+          </h2>
+          <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
+            <ul className="mt-4 space-y-4">
+              {recipe?.ingredients.map((ingredient, index) => (
+                <li
+                  key={index}
+                  className="flex justify-between items-center gap-4"
+                >
+                  <h3 className="font-semibold">{ingredient.name}</h3>
+                  <p className="text-text-muted">{`${ingredient.quantity}${ingredient.unit}`}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Cooking Instructions */}
+        <div className="md:w-[50vw] lg:w-[60vw]">
+          <h2 className="text-2xl font-bold inline-block mr-1.5">Cooking</h2>
+          <h2 className="text-2xl font-bold text-text-primary inline-block">
+            Instructions
+          </h2>
+          <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
+            <ol className="mt-4 space-y-4">
+              {recipe?.steps.map((step, index) => (
+                <li key={index} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-icon p-2 text-text-primary font-bold">
+                      {index + 1}
+                    </div>
+                    <h3 className="font-semibold">{step.title}</h3>
+                  </div>
+                  <p className="text-text-muted">{step.description}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
