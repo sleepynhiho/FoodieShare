@@ -33,7 +33,6 @@ export class SignupService {
     await this.prisma.user.create({
       data: {
         email: dto["email"],
-        passwordHash: ""
       }
     })
 

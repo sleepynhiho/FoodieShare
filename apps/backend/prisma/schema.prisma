@@ -18,9 +18,8 @@ datasource db {
 model User {
   id            String     @id @default(uuid())
   email         String     @unique
-  passwordHash  String
   avatar        String?
-  name          String?
+  username      String?
   recipes       Recipe[]
   favorites     Favorite[]
   ratings       Rating[]
