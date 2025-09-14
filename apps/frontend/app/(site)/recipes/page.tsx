@@ -1,6 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Category } from "@/types";
+import {
+  Utensils,
+  Sandwich,
+  Salad,
+  Soup,
+  Coffee,
+  CakeSlice,
+} from "lucide-react";
 import { recipes } from "@/mocks/recipes";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Pagination } from "@/components/Pagination";
@@ -28,6 +36,83 @@ const defaultFilters = {
 };
 
 export default function RecipesPage() {
+  // Icons for each category
+  const categoryIcons: Record<string, React.ReactNode> = {
+    MainDish: (
+      <Utensils
+        size={20}
+        strokeWidth={1}
+        color="#ffa319"
+        className="inline-block mr-2"
+      />
+    ),
+    SideDish: (
+      <Sandwich
+        size={20}
+        strokeWidth={1}
+        color="#ffa319"
+        className="inline-block mr-2"
+      />
+    ),
+    Dessert: (
+      <CakeSlice
+        size={20}
+        strokeWidth={1}
+        color="#ffa319"
+        className="inline-block mr-2"
+      />
+    ),
+    Soup: (
+      <Soup
+        size={20}
+        strokeWidth={1}
+        color="#ffa319"
+        className="inline-block mr-2"
+      />
+    ),
+    Salad: (
+      <Salad
+        size={20}
+        strokeWidth={1}
+        color="#ffa319"
+        className="inline-block mr-2"
+      />
+    ),
+    Appetizer: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        className="inline-block mr-2"
+      >
+        <circle
+          cx="10"
+          cy="10"
+          r="6"
+          stroke="#ffa319"
+          strokeWidth="2"
+          fill="none"
+        />
+        <circle
+          cx="10"
+          cy="10"
+          r="2"
+          stroke="#ffa319"
+          strokeWidth="2"
+          fill="none"
+        />
+      </svg>
+    ),
+    Beverage: (
+      <Coffee
+        size={20}
+        strokeWidth={1}
+        color="#ffa319"
+        className="inline-block mr-2"
+      />
+    ),
+  };
   const [showFilter, setShowFilter] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | "All">(
     "All"
@@ -125,13 +210,14 @@ export default function RecipesPage() {
             return (
               <button
                 key={cat}
-                className={`px-5 py-1.5 rounded-lg border text-base font-normal transition-colors tracking-wide ${
+                className={`px-5 py-1.5 rounded-lg  text-sm font-normal transition-colors tracking-wide flex items-center ${
                   isSelected
                     ? "bg-[#000000] text-white"
-                    : "bg-[#dde1e4] text-black"
+                    : "bg-[#eaeaea] text-black"
                 }`}
                 onClick={() => setSelectedCategory(cat as Category | "All")}
               >
+                {cat !== "All" && categoryIcons[cat]}
                 {cat === "All"
                   ? "All"
                   : CATEGORY_DISPLAY_NAMES[cat as Category]}
@@ -159,47 +245,49 @@ export default function RecipesPage() {
             <div className="relative flex items-center">
               {/* Sort by */}
               <div className="inline-block w-full">
-                <button
-                  type="button"
-                  className="flex-row flex justify-between items-center px-4 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
-                  onClick={() => setShowSortDropdown((prev) => !prev)}
-                >
-                  <span>Sort by: {filters.sortBy || "Star"}</span>
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="flex-row flex justify-between items-center px-4 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
+                    onClick={() => setShowSortDropdown((prev) => !prev)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                {showSortDropdown && (
-                  <div className=" mt-1 w-full bg-white shadow-lg z-10 border">
-                    {["Star", "Time", "Title"].map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        className={`w-full text-left px-5 py-2 hover:bg-[#f1f1f1]  transition-colors ${
-                          filters.sortBy === option
-                            ? " text-black"
-                            : "text-black"
-                        }`}
-                        onClick={() => {
-                          setFilters((prev) => ({ ...prev, sortBy: option }));
-                          setShowSortDropdown(false);
-                        }}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                    <span>Sort by: {filters.sortBy || "Star"}</span>
+                    <svg
+                      className="w-4 h-4 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {showSortDropdown && (
+                    <div className="absolute left-0 top-full mt-2 w-full bg-white shadow-lg z-50 border">
+                      {["Star", "Time", "Title"].map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          className={`w-full text-left px-5 py-2 hover:bg-[#f1f1f1]  transition-colors ${
+                            filters.sortBy === option
+                              ? " text-black"
+                              : "text-black"
+                          }`}
+                          onClick={() => {
+                            setFilters((prev) => ({ ...prev, sortBy: option }));
+                            setShowSortDropdown(false);
+                          }}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               {/* Sort order */}
               <div className="inline-block w-full ml-2">

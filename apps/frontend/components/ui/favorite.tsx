@@ -18,13 +18,13 @@ export default function Favorite({
         icon={Heart}
         active={isFavorited}
         color={[239, 68, 68]} // red-500
-        size="md"
+        size="sm"
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           toggleFavorite();
         }}
       />
-      <span className="text-xs text-text-muted font-bold">{favoriteCount}</span>
+      {/* <span className="text-xs text-text-muted font-bold">{favoriteCount}</span> */}
     </div>
   );
 }
