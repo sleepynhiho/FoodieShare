@@ -16,7 +16,7 @@ export class SignupService {
     // Check if email exists
     const existingUser = await this.prisma.user.findUnique({
       where: {
-        email: dto["email"]
+        email: dto.email
       }
     })
 
@@ -27,7 +27,7 @@ export class SignupService {
     // Check if username exists
     const existingUsername = await this.prisma.user.findFirst({
       where: {
-        username: dto["username"]
+        username: dto.username
       }
     })
 
@@ -35,23 +35,33 @@ export class SignupService {
       throw new BadRequestException("Username already exists");
     }
 
-    const { data } = await supabase.auth.signUp({
-      email: dto["email"],
-      password: dto["password"],
+    const { data, error } = await supabase.auth.signUp({
+      email: dto.email,
+      password: dto.password,
       options: {
         emailRedirectTo: process.env.REDIRECT_URL
       }
     });
 
+    if (error) {
+      throw new BadRequestException(`Signup failed: ${error.message}`);
+    }
+
     // Only create user in database if Supabase signup was successful and returned a user
     if (data?.user) {
-      await this.prisma.user.create({
-        data: {
-          id: data.user.id, // Use Supabase user ID
-          email: dto["email"],
-          username: dto["username"],
-        }
-      })
+      try {
+        await this.prisma.user.create({
+          data: {
+            id: data.user.id, // Use Supabase user ID
+            email: dto.email,
+            username: dto.username,
+          }
+        })
+      } catch (dbError) {
+        // If database creation fails, we should clean up the Supabase user
+        // But for now, just throw an error
+        throw new BadRequestException("Failed to create user profile");
+      }
     }
 
     return data;
