@@ -30,6 +30,7 @@ export class RecipeResponseDto {
   prepTime: number;
   servings: number;
   difficulty: string;
+  avgRating?: number;
   ingredients: RecipeIngredientResponseDto[];
   steps: RecipeStepResponseDto[];
   author: RecipeAuthorDto;

@@ -59,6 +59,9 @@ export class RatingsService {
       });
     }
 
+    // Calculate and update average rating for the recipe
+    await this.updateRecipeAverageRating(recipeId);
+
     return this.formatRatingResponse(rating);
   }
 
@@ -144,5 +147,22 @@ export class RatingsService {
       recipeId: rating.recipeId,
       createdAt: rating.createdAt.toISOString(),
     };
+  }
+
+  private async updateRecipeAverageRating(recipeId: string): Promise<void> {
+    // Calculate average rating for this recipe
+    const ratingStats = await this.prisma.rating.aggregate({
+      where: { recipeId },
+      _avg: { score: true },
+      _count: { score: true }
+    });
+
+    const avgRating = ratingStats._avg.score || 0;
+    
+    // Update the recipe with the new average rating
+    await this.prisma.recipe.update({
+      where: { id: recipeId },
+      data: { avgRating: Math.round(avgRating * 10) / 10 } // Round to 1 decimal place
+    });
   }
 }
