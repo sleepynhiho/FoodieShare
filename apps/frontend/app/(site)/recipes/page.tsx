@@ -8,6 +8,11 @@ import {
   Soup,
   Coffee,
   CakeSlice,
+  Star,
+  Timer,
+  AArrowDown,
+  AArrowUp,
+  CaseSensitive,
 } from "lucide-react";
 import { recipes } from "@/mocks/recipes";
 import { RecipeCard } from "@/components/RecipeCard";
@@ -91,7 +96,7 @@ export default function RecipesPage() {
           cy="10"
           r="6"
           stroke="#ffa319"
-          strokeWidth="2"
+          strokeWidth="1"
           fill="none"
         />
         <circle
@@ -126,6 +131,8 @@ export default function RecipesPage() {
   });
   const [filters, setFilters] = useState({ ...defaultFilters });
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState("Star"); // hoặc lấy từ filters nếu bạn dùng object
+  const [sortOrder, setSortOrder] = useState("desc"); // "desc" = High to Low, "asc" = Low to High
   const [showOrderDropdown, setShowOrderDropdown] = useState(false);
   const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
 
@@ -166,12 +173,16 @@ export default function RecipesPage() {
 
   // Sắp xếp công thức theo tiêu chí đã chọn
   const sortedRecipes = [...filteredRecipes].sort((a, b) => {
-    if (filters.sortBy === "Star")
-      return getAvgRating(b.id) - getAvgRating(a.id);
-    if (filters.sortBy === "Time")
-      return a.cookTime + a.prepTime - (b.cookTime + b.prepTime);
-    if (filters.sortBy === "Title") return a.title.localeCompare(b.title);
-    return 0;
+    let compare = 0;
+    if (filters.sortBy === "Star") {
+      compare = getAvgRating(b.id) - getAvgRating(a.id);
+    } else if (filters.sortBy === "Time") {
+      compare = a.cookTime + a.prepTime - (b.cookTime + b.prepTime);
+    } else if (filters.sortBy === "Title") {
+      compare = a.title.localeCompare(b.title);
+    }
+    // Nếu order là asc thì đảo ngược kết quả
+    return filters.sortOrder === "asc" ? -compare : compare;
   });
 
   // Tính toán phân trang
@@ -189,6 +200,19 @@ export default function RecipesPage() {
         : [...prev, recipeId]
     );
   };
+
+  // Đóng dropdown sort khi click ra ngoài
+  useEffect(() => {
+    if (!showSortDropdown) return;
+    const handleClick = (e: MouseEvent) => {
+      const dropdown = document.getElementById("sort-dropdown");
+      if (dropdown && !dropdown.contains(e.target as Node)) {
+        setShowSortDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showSortDropdown]);
 
   return (
     <main className="w-full min-h-screen bg-white">
@@ -248,10 +272,17 @@ export default function RecipesPage() {
                 <div className="relative">
                   <button
                     type="button"
-                    className="flex-row flex justify-between items-center px-4 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
+                    className="flex items-center px-4 py-2 rounded-full border bg-white text-base font-normal shadow-sm hover:bg-gray-50"
                     onClick={() => setShowSortDropdown((prev) => !prev)}
                   >
-                    <span>Sort by: {filters.sortBy || "Star"}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-gray-500">Sort by :</span>
+                      {filters.sortBy === "Star" ? "Rating" : filters.sortBy} (
+                      {filters.sortOrder === "desc"
+                        ? "High to Low"
+                        : "Low to High"}
+                      )
+                    </span>
                     <svg
                       className="w-4 h-4 ml-2"
                       fill="none"
@@ -267,77 +298,144 @@ export default function RecipesPage() {
                     </svg>
                   </button>
                   {showSortDropdown && (
-                    <div className="absolute left-0 top-full mt-2 w-full bg-white shadow-lg z-50 border">
-                      {["Star", "Time", "Title"].map((option) => (
+                    <div
+                      id="sort-dropdown"
+                      className="absolute left-0 top-full mt-2 w-[270px] bg-white shadow-lg z-50 border rounded-xl p-2"
+                    >
+                      <div className="mt-2 mb-2 px-2 text-xs font-semibold text-gray-500">
+                        SORT BY
+                      </div>
+                      {[
+                        {
+                          key: "Star",
+                          label: "Rating",
+                          icon: (
+                            <Star size={18} className="text-[#ffa319] mr-2" />
+                          ),
+                        },
+                        {
+                          key: "Time",
+                          label: "Cooking Time",
+                          icon: (
+                            <Timer size={18} className="text-[#ffa319] mr-2" />
+                          ),
+                        },
+                        {
+                          key: "Title",
+                          label: "Name",
+                          icon: (
+                            <CaseSensitive
+                              size={19}
+                              className="text-[#ffa319] mr-2"
+                            />
+                          ),
+                        },
+                      ].map((option) => (
                         <button
-                          key={option}
+                          key={option.key}
                           type="button"
-                          className={`w-full text-left px-5 py-2 hover:bg-[#f1f1f1]  transition-colors ${
-                            filters.sortBy === option
-                              ? " text-black"
-                              : "text-black"
+                          className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#f1f1f1] transition-colors ${
+                            filters.sortBy === option.key ? "bg-[#fff7e6]" : ""
                           }`}
-                          onClick={() => {
-                            setFilters((prev) => ({ ...prev, sortBy: option }));
-                            setShowSortDropdown(false);
-                          }}
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              sortBy: option.key,
+                            }))
+                          }
                         >
-                          {option}
+                          {option.icon}
+                          <span>{option.label}</span>
+                          {filters.sortBy === option.key && (
+                            <span className="ml-auto">
+                              <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M5 10.5L9 14.5L15 7.5"
+                                  stroke="#ffa319"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                      <div className="mt-4 mb-2 px-2 text-xs font-semibold text-gray-500">
+                        ORDER
+                      </div>
+
+                      {[
+                        {
+                          key: "desc",
+                          label: "High to Low",
+                          icon: (
+                            <AArrowDown
+                              size={19}
+                              className="text-[#ffa319] mr-2 "
+                            />
+                          ),
+                        },
+                        {
+                          key: "asc",
+                          label: "Low to High",
+                          icon: (
+                            <AArrowUp
+                              size={19}
+                              className="text-[#ffa319] mr-2"
+                            />
+                          ),
+                        },
+                      ].map((option) => (
+                        <button
+                          key={option.key}
+                          type="button"
+                          className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#f1f1f1] transition-colors ${
+                            filters.sortOrder === option.key
+                              ? "bg-[#fff7e6]"
+                              : ""
+                          }`}
+                          onClick={() =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              sortOrder: option.key as "desc" | "asc",
+                            }))
+                          }
+                        >
+                          {option.icon}
+                          <span>{option.label}</span>
+                          {filters.sortOrder === option.key && (
+                            <span className="ml-auto">
+                              <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M5 10.5L9 14.5L15 7.5"
+                                  stroke="#ffa319"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
-              {/* Sort order */}
-              <div className="inline-block w-full ml-2">
-                <button
-                  type="button"
-                  className="flex-row flex justify-between items-center px-5 py-2 rounded-full border bg-white text-base font-medium shadow-sm hover:bg-gray-50"
-                  onClick={() => setShowOrderDropdown((prev) => !prev)}
-                >
-                  <span>
-                    {filters.sortOrder === "asc" ? "Ascending" : "Descending"}
-                  </span>
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                {showOrderDropdown && (
-                  <div className="absolute left-0 mt-1 w-full bg-white shadow-lg z-10 border">
-                    {["asc", "desc"].map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        className={`w-full text-left px-5 py-2 hover:bg-[#f1f1f1]  transition-colors ${
-                          filters.sortOrder === option
-                            ? " text-black"
-                            : "text-black"
-                        }`}
-                        onClick={() => {
-                          setFilters((prev) => ({
-                            ...prev,
-                            sortOrder: option as "asc" | "desc",
-                          }));
-                          setShowOrderDropdown(false);
-                        }}
-                      >
-                        {option === "asc" ? "Ascending" : "Descending"}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+
               {/* Icon filter chỉ hiện trên mobile */}
               <div className="ml-2 md:hidden">
                 <button
