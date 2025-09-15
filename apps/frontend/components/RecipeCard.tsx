@@ -44,93 +44,97 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
   ).length;
 
   return (
-    <Link href={`/recipes/${recipe.id}`}>
-      <div className="block group cursor-pointer">
-        <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-          {/* Fixed aspect ratio and min/max height for image area */}
-          <div className="relative w-full aspect-[4/3] min-h-[120px] max-h-[180px] bg-gray-100">
-            {recipe.image ? (
-              <img
-                src={recipe.image}
-                alt={recipe.title}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
-                style={{ minHeight: "120px", maxHeight: "180px" }}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  const fallback = e.currentTarget
-                    .nextElementSibling as HTMLElement | null;
-                  if (fallback) fallback.style.display = "flex";
-                }}
-              />
-            ) : null}
-            {/* Fallback for missing or error image */}
-            <div
-              className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-100"
-              style={{
-                display: recipe.image ? "none" : "flex",
-                minHeight: "120px",
-                maxHeight: "180px",
-              }}
-            >
-              No Image
-            </div>
-          </div>
-          <div className="p-4 flex flex-col h-[180px]">
-            <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-base font-semibold truncate">
-                {recipe.title}
-              </h2>
-              {/* Category badge */}
-              {recipe.category && (
-                <span className="px-1 py-0.3 rounded-sm text-gray-700 font-normal text-[10px] bg-[#ffe4b5]">
-                  {CATEGORY_DISPLAY_NAMES[recipe.category] || recipe.category}
-                </span>
-              )}
-            </div>
-
-            <p className="text-sm text-gray-500 mb-2 line-clamp-2 h-[40px]">
-              {recipe.description}
-            </p>
-            <div className="flex items-center justify-between text-xs text-gray-400">
-              <span>⏱ {recipe.prepTime + recipe.cookTime} min</span>
-              <span className="flex items-center">
-                {author && author.avatar && (
-                  <img
-                    src={author.avatar}
-                    alt={author.username}
-                    className="w-5 h-5 rounded-full mr-2 inline-block"
-                  />
-                )}
-                {author ? author.username : "Unknown"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="flex items-center gap-1 text-[#ffa319]">
-                <StarIcon />
-                <span className="text-sm">{averageRating}</span>
-                <span className="flex items-center text-xs text-gray-500 h-full">
-                  ({recipeRatings.length})
-                </span>
-              </span>
-              <div className="flex items-center gap-1">
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleFavorite();
+    <div className="relative">
+      <Link href={`/recipes/${recipe.id}`}>
+        <div className="block group cursor-pointer">
+          <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
+            {/* Fixed aspect ratio and min/max height for image area */}
+            <div className="relative w-full aspect-[4/3] min-h-[120px] max-h-[180px] bg-gray-100">
+              {recipe.image ? (
+                <img
+                  src={recipe.image}
+                  alt={recipe.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  style={{ minHeight: "120px", maxHeight: "180px" }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const fallback = e.currentTarget
+                      .nextElementSibling as HTMLElement | null;
+                    if (fallback) fallback.style.display = "flex";
                   }}
-                >
-                  <Favorite
-                    isFavorited={isFavorited}
-                    toggleFavorite={onToggleFavorite}
-                    favoriteCount={favoriteCount}
-                  />
-                </div>
-                <span className="text-xs text-gray-500">({favoriteCount})</span>
+                />
+              ) : null}
+              {/* Fallback for missing or error image */}
+              <div
+                className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-100"
+                style={{
+                  display: recipe.image ? "none" : "flex",
+                  minHeight: "120px",
+                  maxHeight: "180px",
+                }}
+              >
+                No Image
+              </div>
+            </div>
+            <div className="p-4 flex flex-col h-[180px]">
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-base font-semibold truncate">
+                  {recipe.title}
+                </h2>
+                {/* Category badge */}
+                {recipe.category && (
+                  <span className="px-1 py-0.3 rounded-sm text-gray-700 font-normal text-[10px] bg-[#ffe4b5]">
+                    {CATEGORY_DISPLAY_NAMES[recipe.category] || recipe.category}
+                  </span>
+                )}
+              </div>
+
+              <p className="text-sm text-gray-500 mb-2 line-clamp-2 h-[40px]">
+                {recipe.description}
+              </p>
+              <div className="flex items-center justify-between text-xs text-gray-400">
+                <span>⏱ {recipe.prepTime + recipe.cookTime} min</span>
+                <span className="flex items-center">
+                  {author && author.avatar && (
+                    <img
+                      src={author.avatar}
+                      alt={author.username}
+                      className="w-5 h-5 rounded-full mr-2 inline-block"
+                    />
+                  )}
+                  {author ? author.username : "Unknown"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="flex items-center gap-1 text-[#ffa319]">
+                  <StarIcon />
+                  <span className="text-sm">{averageRating}</span>
+                  <span className="flex items-center text-xs text-gray-500 h-full">
+                    ({recipeRatings.length})
+                  </span>
+                </span>
+                <div className="w-[30px]"></div>
               </div>
             </div>
           </div>
         </div>
+      </Link>
+      {/* Favorite button and count positioned absolutely */}
+      <div
+        className="absolute bottom-[34px] right-4 z-10 flex items-center gap-1"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onToggleFavorite();
+        }}
+      >
+        <Favorite
+          isFavorited={isFavorited}
+          toggleFavorite={onToggleFavorite}
+          favoriteCount={favoriteCount}
+        />
+        <span className="text-xs text-gray-500">({favoriteCount})</span>
       </div>
-    </Link>
+    </div>
   );
 };
