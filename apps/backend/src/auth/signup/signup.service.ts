@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, BadRequestException } from "@nestjs/common";
 import { SupabaseService } from "src/common/supabase/supabase.service";
 import { PrismaService } from "src/common/prisma/prisma.service";
 import { CreateUserDto } from "../dto/signup.dto";
@@ -14,13 +14,26 @@ export class SignupService {
     const supabase = this.supabaseService.getClient();
 
     // Check if email exists
-    const user = await this.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findUnique({
       where: {
         email: dto["email"]
       }
     })
 
-    if (user) return null
+    if (existingUser) {
+      throw new BadRequestException("Email already exists");
+    }
+
+    // Check if username exists
+    const existingUsername = await this.prisma.user.findFirst({
+      where: {
+        username: dto["username"]
+      }
+    })
+
+    if (existingUsername) {
+      throw new BadRequestException("Username already exists");
+    }
 
     const { data } = await supabase.auth.signUp({
       email: dto["email"],
@@ -36,6 +49,7 @@ export class SignupService {
         data: {
           id: data.user.id, // Use Supabase user ID
           email: dto["email"],
+          username: dto["username"],
         }
       })
     }
