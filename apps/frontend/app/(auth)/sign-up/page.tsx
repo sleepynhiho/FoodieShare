@@ -5,16 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Circle, Info } from "lucide-react";
+import { CheckCircle, Circle } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
+import { signUp } from "@/services/authService";
 
 export default function SignUpPage() {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [showRequirements, setShowRequirements] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const [touched, setTouched] = React.useState({
     name: false,
@@ -60,6 +61,36 @@ export default function SignUpPage() {
   const markTouched = (field: keyof typeof touched) =>
     setTouched((t) => ({ ...t, [field]: true }));
 
+  const onSubmitForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched({ name: true, email: true, password: true });
+    if (
+      !isNameValid(name) ||
+      !isEmailValid(email) ||
+      !isPasswordValid(password)
+    )
+      return;
+
+    try {
+      setLoading(true);
+      // Call signup API
+      await signUp(name, email, password);
+
+      setPassword("");
+      setEmail("");
+      setName("");
+      setTouched({ name: false, email: false, password: false });
+
+      alert(
+        "Account created successfully. Please check your email to confirm."
+      );
+    } catch (err: any) {
+      console.error("Signup error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card className="border-0 space-y-10 shadow-none">
       <CardHeader>
@@ -69,20 +100,7 @@ export default function SignUpPage() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form
-          className="space-y-8"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setTouched({ name: true, email: true, password: true });
-            if (
-              isNameValid(name) &&
-              isEmailValid(email) &&
-              isPasswordValid(password)
-            ) {
-              console.log({ name, email, password });
-            }
-          }}
-        >
+        <form className="space-y-8" onSubmit={onSubmitForm}>
           {/* NAME */}
           <div className="space-y-2">
             <Label htmlFor="name">Your name</Label>
@@ -98,6 +116,7 @@ export default function SignUpPage() {
                 nameError && "border-red-500 focus-visible:ring-red-500"
               )}
               required
+              placeholder="Emily Rose"
             />
             {nameError && <ErrorMessage errorMessage={nameError} />}
           </div>
@@ -117,6 +136,7 @@ export default function SignUpPage() {
                 emailError && "border-red-500 focus-visible:ring-red-500"
               )}
               required
+              placeholder="you@example.com"
             />
             {emailError && <ErrorMessage errorMessage={emailError} />}
           </div>
@@ -129,10 +149,8 @@ export default function SignUpPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setShowRequirements(true)}
               onBlur={() => {
                 markTouched("password");
-                if (!password) setShowRequirements(false);
               }}
               aria-invalid={!!passwordError}
               aria-describedby="password-error"
@@ -140,45 +158,40 @@ export default function SignUpPage() {
                 passwordError && "border-red-500 focus-visible:ring-red-500"
               )}
               required
+              placeholder="Your password"
             />
 
             {passwordError && <ErrorMessage errorMessage={passwordError} />}
 
             {/* Checklist */}
             <div className="mt-2 min-h-[80px]">
-              {showRequirements && (
-                <div className="space-y-1">
-                  {requirements.map((req, idx) => {
-                    const ok = req.test(password);
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        {ok ? (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        ) : (
-                          <Circle className="w-4 h-4 text-gray-400" />
-                        )}
-                        <span
-                          className={ok ? "text-green-600" : "text-gray-600"}
-                        >
-                          {req.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <div className={`space-y-1 ${password ? "block" : "hidden"}`}>
+                {requirements.map((req, idx) => {
+                  const ok = req.test(password);
+                  return (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      {ok ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Circle className="w-4 h-4 text-gray-400" />
+                      )}
+                      <span className={ok ? "text-green-600" : "text-gray-600"}>
+                        {req.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           <div className="space-y-4">
             <Button
               type="submit"
+              disabled={loading}
               className="w-full bg-bg-secondary/85 text-white hover:bg-bg-secondary hover:text-white"
             >
-              Create Account
+              {loading ? "Creating your account..." : "Create Account"}
             </Button>
 
             <p className="text-center text-sm text-gray-600">

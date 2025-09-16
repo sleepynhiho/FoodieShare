@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { UtensilsCrossed, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UserProfileButton } from "@/components/auth/UserProfileButton";
+import { isAuthenticated } from "@/services/authService";
 
 const NavLink = ({
   href,
@@ -34,6 +36,15 @@ const NavLink = ({
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await isAuthenticated();
+      setIsLoggedIn(authenticated);
+    };
+    checkAuth();
+  }, [pathname]);
 
   const toggleSidebar = () => setOpen(!open);
 
@@ -70,16 +81,20 @@ export function Navbar() {
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
-          {/* Desktop: Sign in button */}
+          {/* Desktop: Sign in button or User Profile */}
           <div className="hidden sm:block">
-            <Link href="/login">
-              <Button
-                size="sm"
-                className="bg-black text-white border hover:bg-gray-900"
-              >
-                Sign in
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <UserProfileButton />
+            ) : (
+              <Link href="/login">
+                <Button
+                  size="sm"
+                  className="bg-black text-white border hover:bg-gray-900"
+                >
+                  Sign in
+                </Button>
+              </Link>
+            )}
           </div>
           {/* Mobile: Side menu button */}
           <button
@@ -160,14 +175,18 @@ export function Navbar() {
                 </NavLink>
               </nav>
               <div className="mt-auto pt-4">
-                <Link href="/login">
-                  <Button
-                    size="sm"
-                    className="w-full bg-black text-white border hover:bg-gray-900"
-                  >
-                    Sign in
-                  </Button>
-                </Link>
+                {isLoggedIn ? (
+                  <UserProfileButton />
+                ) : (
+                  <Link href="/login">
+                    <Button
+                      size="sm"
+                      className="w-full bg-black text-white border hover:bg-gray-900"
+                    >
+                      Sign in
+                    </Button>
+                  </Link>
+                )}
               </div>
             </motion.div>
           </>
