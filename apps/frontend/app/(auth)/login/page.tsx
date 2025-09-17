@@ -8,10 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
+import { login } from "@/services/authService";
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
+  const router = useRouter();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
   const [touched, setTouched] = React.useState({
     email: false,
@@ -43,10 +47,21 @@ export default function SignInPage() {
     if (!isEmailValid(email) || !isPasswordValid(password)) return;
 
     try {
-      // TODO: call your API here, e.g. await signIn(email, password)
-      // await signIn(email, password);
-    } catch (error) {
-      // TODO: handle error
+      setLoading(true);
+      // Call login API
+      let response = await login(email, password);
+      if (!response) {
+        throw new Error("Login failed");
+      }
+      setEmail("");
+      setPassword("");
+      setTouched({ email: false, password: false });
+      
+      router.push("/"); // Redirect to homepage      
+    } catch (err: any) {
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -117,9 +132,10 @@ export default function SignInPage() {
           <div className="space-y-4">
             <Button
               type="submit"
+              disabled={loading}
               className="w-full bg-bg-secondary/85 text-white hover:bg-bg-secondary hover:text-white"
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
 
             <p className="text-center text-sm text-gray-600">
