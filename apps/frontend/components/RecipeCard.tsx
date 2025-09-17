@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Recipe } from "@/types/recipe";
 
@@ -7,6 +8,7 @@ import { users } from "@/mocks/users";
 import { ratings } from "@/mocks/ratings";
 import { favorites } from "@/mocks/favorites";
 import Favorite from "@/components/ui/favorite";
+import { useFavorites } from "@/context/FavoritesContext";
 
 export const StarIcon = ({ className = "w-4 h-4" }) => (
   <svg
@@ -21,13 +23,11 @@ export const StarIcon = ({ className = "w-4 h-4" }) => (
 interface RecipeCardProps {
   recipe: Recipe;
   isFavorited?: boolean;
-  onToggleFavorite?: () => void;
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({
   recipe,
-  isFavorited = false,
-  onToggleFavorite = () => {},
+  isFavorited = false
 }) => {
   const author = users.find((u) => u.id === recipe.authorId);
   const recipeRatings = ratings.filter((r) => r.recipeId === recipe.id);
@@ -39,9 +39,12 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         ).toFixed(1)
       : "-";
 
-  const favoriteCount = favorites.filter(
-    (f) => f.recipeId === recipe.id
-  ).length;
+  const { toggleFavorite, favoriteCountDict } = useFavorites()
+  const getFavoriteCount = () => {
+    if (!favoriteCountDict[recipe.id])
+      favoriteCountDict[recipe.id] = 0
+    return favoriteCountDict[recipe.id]
+  }
 
   return (
     <div className="relative">
@@ -125,15 +128,16 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          onToggleFavorite();
+          toggleFavorite(1, recipe.id);
         }}
       >
         <Favorite
           isFavorited={isFavorited}
-          toggleFavorite={onToggleFavorite}
+          recipeId={recipe.id}
+          toggleFavorite={toggleFavorite}
           isSmall={true}
         />
-        <span className="text-xs text-gray-500">({favoriteCount})</span>
+        <span className="text-xs text-gray-500">({getFavoriteCount()})</span>
       </div>
     </div>
   );

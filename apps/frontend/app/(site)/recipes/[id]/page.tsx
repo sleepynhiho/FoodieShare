@@ -99,6 +99,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         >
           <Favorite
             isFavorited={isFavorited}
+            recipeId={parseInt(params.id)}
             toggleFavorite={toggleFavorite}
           />
         </div>

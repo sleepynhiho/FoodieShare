@@ -15,6 +15,7 @@ import {
   CaseSensitive,
 } from "lucide-react";
 import { recipes } from "@/mocks/recipes";
+import { favorites } from "@/mocks/favorites";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Pagination } from "@/components/Pagination";
 import {
@@ -22,9 +23,9 @@ import {
   RECIPE_CATEGORIES,
   PAGINATION_DEFAULTS,
 } from "@/lib/constants";
-import { favorites } from "@/mocks/favorites";
 import { RecipeFilters } from "@/components/RecipeFilters";
 import { ratings } from "@/mocks/ratings";
+import { useFavorites } from "@/context/FavoritesContext";
 
 const categories = RECIPE_CATEGORIES;
 const maxCookTime = Math.max(...recipes.map((r) => r.cookTime));
@@ -125,16 +126,28 @@ export default function RecipesPage() {
   const [currentPage, setCurrentPage] = useState(
     PAGINATION_DEFAULTS.DEFAULT_PAGE
   );
-  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
-    // Giả lập userId = 1
-    return favorites.filter((f) => f.userId === 1).map((f) => f.recipeId);
-  });
   const [filters, setFilters] = useState({ ...defaultFilters });
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [sortBy, setSortBy] = useState("Star"); // hoặc lấy từ filters nếu bạn dùng object
   const [sortOrder, setSortOrder] = useState("desc"); // "desc" = High to Low, "asc" = Low to High
   const [showOrderDropdown, setShowOrderDropdown] = useState(false);
+  const { favoriteIds, setFavoriteIds } = useFavorites()
   const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
+
+  console.log(favoriteIds)
+
+  // Check if localStorage has favorites
+  useEffect(() => {
+    const storedFavorites = localStorage.getItem(`favorites_user_${1}`);
+    if (storedFavorites)
+      setFavoriteIds(JSON.parse(storedFavorites))
+    else 
+      setFavoriteIds(
+        favorites
+          .filter((f) => f.userId === 1)
+          .map((f) => f.recipeId)
+      )
+  }, [])
 
   // Tính rating trung bình cho mỗi recipe
   const getAvgRating = (recipeId: number) => {
@@ -191,15 +204,6 @@ export default function RecipesPage() {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
-
-  // Xử lý toggle favorite
-  const toggleFavorite = (recipeId: number) => {
-    setFavoriteIds((prev) =>
-      prev.includes(recipeId)
-        ? prev.filter((id) => id !== recipeId)
-        : [...prev, recipeId]
-    );
-  };
 
   // Đóng dropdown sort khi click ra ngoài
   useEffect(() => {
@@ -509,7 +513,6 @@ export default function RecipesPage() {
                   key={recipe.id}
                   recipe={recipe}
                   isFavorited={favoriteIds.includes(recipe.id)}
-                  onToggleFavorite={() => toggleFavorite(recipe.id)}
                 />
               ))
             )}

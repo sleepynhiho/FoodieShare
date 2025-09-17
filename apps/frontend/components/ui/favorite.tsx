@@ -3,12 +3,14 @@ import { Heart } from "lucide-react";
 
 interface FavoriteProps {
   isFavorited: boolean;
-  toggleFavorite: () => void;
+  recipeId: number;
+  toggleFavorite: (recipeId: number, userId: number) => void;
   isSmall?: boolean;
 }
 
 export default function Favorite({
   isFavorited = false,
+  recipeId = 1,
   toggleFavorite,
   isSmall = false
 }: FavoriteProps) {
@@ -21,7 +23,7 @@ export default function Favorite({
         color={[239, 68, 68]} // red-500
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
-          toggleFavorite();
+          toggleFavorite(recipeId, 1);
         }}
       />
     </div>
