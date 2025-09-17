@@ -76,27 +76,35 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
     <main className="px-4">
       {/* Recipe Image */}
       <div className="relative w-full rounded-lg overflow-hidden mb-6">
-        <img
-          src={recipe?.image}
-          alt={recipe?.description}
-          className="w-full max-h-96 object-cover rounded-xl object-[70%_70%] md:object-center"
-        />
+        <div className="relative">
+          <img
+            src={recipe?.image}
+            alt={recipe?.description}
+            className="w-full max-h-96 object-cover rounded-xl object-[70%_70%] md:object-center"
+          />
+
+          <div
+            className="absolute mb-8 sm:mb-12 px-4 xs:px-8 inset-y-0 flex flex-col flex-wrap justify-end gap-1"
+            style={{ textShadow: "2px 2px 6px rgba(36, 36, 36, 0.7)" }}
+          >
+            <p className="text-sm sm:text-lg text-white font-semibold">Let's Cook</p>
+            <h1 className="text-white text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold">{recipe?.title}</h1>
+          </div>
+        </div>
         <div
           className={`
-            absolute top-2 left-2 ml-2 mt-2 bg-white hover:bg-white transition p-1 rounded-full shadow-lg cursor-pointer 
+            absolute top-2 right-2 mr-2 mt-2 xs:mr-4 xs:mt-4 bg-white hover:bg-white transition p-1 rounded-full shadow-lg cursor-pointer 
+            w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 flex items-center justify-center
           `}
-          style={{ width: "10%", aspectRatio: "1 / 1", minWidth: "32px", maxWidth: "48px" }}
         >
           <Favorite
             isFavorited={isFavorited}
             toggleFavorite={toggleFavorite}
-            favoriteCount={favoriteCount}
           />
         </div>
       </div>
 
       <div className="flex flex-col justify-center items-center gap-4 mb-6">
-        <h1 className="text-3xl text-center font-bold">{recipe?.title}</h1>
         <RecipeAvgRating
           avgRating={avgRating || 0}
           ratingCount={recipeRatings.length || 0}

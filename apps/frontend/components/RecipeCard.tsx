@@ -131,7 +131,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         <Favorite
           isFavorited={isFavorited}
           toggleFavorite={onToggleFavorite}
-          favoriteCount={favoriteCount}
+          isSmall={true}
         />
         <span className="text-xs text-gray-500">({favoriteCount})</span>
       </div>
