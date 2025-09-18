@@ -8,6 +8,8 @@ import { recipes } from "@/mocks/recipes";
 import { favorites } from "@/mocks/favorites";
 import { ratings } from "@/mocks/ratings";
 import { users } from "@/mocks/users";
+import { useFavorites } from "@/context/FavoritesContext";
+import { RatingForm } from "@/components/RatingForm";
 
 interface RecipePageProps {
   params: { 
@@ -16,14 +18,10 @@ interface RecipePageProps {
 }
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
-  const isFavoritedByUser = favorites.find((favorite) => favorite.userId === 1 && favorite.recipeId === parseInt(params.id, 10)) 
-  const numberOfFavorites = favorites.filter((favorite) => favorite.recipeId === parseInt(params.id, 10)).length
+  const { favoriteIds, toggleFavorite } = useFavorites()
+  const userRating = ratings.find((rating) => rating.userId === 1 && rating.recipeId === parseInt(params.id, 10))
   const recipeRatings = ratings.filter((rating) => rating.recipeId === parseInt(params.id, 10))
   const avgRating = Math.round((recipeRatings.reduce((acc, curr) => acc + curr.score, 0) / recipeRatings.length * 10)) / 10
-
-  const [isFavorited, setIsFavorited] = useState(isFavoritedByUser ? true : false);
-  const [favoriteCount, setFavoriteCount] = useState(numberOfFavorites || 0);
-
   const recipe = recipes.find(r => r.id === parseInt(params.id, 10));
 
   const getAuthorNameById = (authorId: number) => {
@@ -46,11 +44,6 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
   const formatRecipeCount = (count: number) => {
     return count === 1 ? "1 Recipe" : `${count} Recipes`;
   }
-
-  const toggleFavorite = () => {
-    setIsFavorited((prev) => !prev); 
-    setFavoriteCount((prevCount) => isFavorited ? prevCount - 1 : prevCount + 1);
-  };
 
   const recipeFields = ["Category", "Servings", "Prep Time", "Cook Time", "Difficulty", getAuthorNameById(recipe?.authorId || 0)]; 
 
@@ -98,7 +91,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
           `}
         >
           <Favorite
-            isFavorited={isFavorited}
+            isFavorited={favoriteIds.includes(parseInt(params.id))}
             recipeId={parseInt(params.id)}
             toggleFavorite={toggleFavorite}
           />
@@ -142,50 +135,55 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         <h2 className="text-2xl font-bold">Description</h2>
         <p className="mt-2 text-text-muted">{recipe?.description}</p>
       </div>
-
-      <div className="flex flex-col md:flex-row md:justify-between md:gap-4">
-        {/* Ingredients */}
-        <div className="mb-8 flex-1">
-          <h2 className="text-2xl font-bold inline-block mr-1.5">
-            Ingredients
-          </h2>
-          <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
-            <ul className="mt-4 space-y-4">
-              {recipe?.ingredients.map((ingredient, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center gap-4"
-                >
-                  <h3 className="font-semibold">{ingredient.name}</h3>
-                  <p className="text-text-muted">{`${ingredient.quantity}${ingredient.unit}`}</p>
-                </li>
-              ))}
-            </ul>
+      
+      <div className="flex flex-col">
+        <div className="flex flex-col md:flex-row md:justify-between md:gap-4">
+          {/* Ingredients */}
+          <div className="mb-8 flex-1">
+            <h2 className="text-2xl font-bold inline-block mr-1.5">
+              Ingredients
+            </h2>
+            <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
+              <ul className="mt-4 space-y-4">
+                {recipe?.ingredients.map((ingredient, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center gap-4"
+                  >
+                    <h3 className="font-semibold">{ingredient.name}</h3>
+                    <p className="text-text-muted">{`${ingredient.quantity}${ingredient.unit}`}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
 
-        {/* Cooking Instructions */}
-        <div className="md:w-[50vw] lg:w-[60vw]">
-          <h2 className="text-2xl font-bold inline-block mr-1.5">Cooking</h2>
-          <h2 className="text-2xl font-bold text-text-primary inline-block">
-            Instructions
-          </h2>
-          <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
-            <ol className="mt-4 space-y-4">
-              {recipe?.steps.map((step, index) => (
-                <li key={index} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-icon p-2 text-text-primary font-bold">
-                      {index + 1}
+          {/* Cooking Instructions */}
+          <div className="md:w-[50vw] lg:w-[60vw]">
+            <h2 className="text-2xl font-bold inline-block mr-1.5">Cooking</h2>
+            <h2 className="text-2xl font-bold text-text-primary inline-block">
+              Instructions
+            </h2>
+            <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
+              <ol className="mt-4 space-y-4">
+                {recipe?.steps.map((step, index) => (
+                  <li key={index} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-icon p-2 text-text-primary font-bold">
+                        {index + 1}
+                      </div>
+                      <h3 className="font-semibold">{step.title}</h3>
                     </div>
-                    <h3 className="font-semibold">{step.title}</h3>
-                  </div>
-                  <p className="text-text-muted">{step.description}</p>
-                </li>
-              ))}
-            </ol>
+                    <p className="text-text-muted">{step.description}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
+
+        {/* Rating Form */}
+        <RatingForm recipeTitle={recipe?.title || ""} recipeRating={userRating}/>
       </div>
     </main>
   )
