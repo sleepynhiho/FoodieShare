@@ -4,6 +4,7 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { RecipeResponseDto } from './dto/recipe-response.dto';
 import { GetRecipesQueryDto, RecipeListResponseDto } from './dto/get-recipes-query.dto';
+import { FavoriteRecipeResponseDto } from './dto/favorite-recipe-response.dto';
 
 @Injectable()
 export class RecipesService {
@@ -258,6 +259,56 @@ export class RecipesService {
     await this.prisma.recipe.delete({
       where: { id }
     });
+  }
+
+  async toggleFavorite(recipeId: string, userId: string): Promise<FavoriteRecipeResponseDto> {
+    // Check if recipe exists
+    const recipe = await this.prisma.recipe.findUnique({
+      where: { id: recipeId }
+    });
+
+    if (!recipe) {
+      throw new NotFoundException(`Recipe with ID ${recipeId} not found`);
+    }
+
+    // Check if the recipe is already favorited by the user
+    const existingFavorite = await this.prisma.favorite.findUnique({
+      where: {
+        userId_recipeId: {
+          userId,
+          recipeId,
+        },
+      },
+    });
+
+    if (existingFavorite) {
+      // If favorite exists, remove it
+      await this.prisma.favorite.delete({
+        where: {
+          id: existingFavorite.id,
+        },
+      });
+
+      return {
+        id: recipeId,
+        isFavorited: false,
+        message: 'Recipe removed from favorites',
+      };
+    } else {
+      // If favorite doesn't exist, create it
+      await this.prisma.favorite.create({
+        data: {
+          userId,
+          recipeId,
+        },
+      });
+
+      return {
+        id: recipeId,
+        isFavorited: true,
+        message: 'Recipe added to favorites',
+      };
+    }
   }
 
   private formatRecipeResponse(recipe: any): RecipeResponseDto {
