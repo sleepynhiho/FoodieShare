@@ -1,5 +1,5 @@
 import { favorites } from "@/mocks/favorites";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 type FavoritesContextType = {
   favoriteIds: number[];
@@ -13,16 +13,20 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 export const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
-  const [favoriteCountDict, setFavoriteCountDict] = useState<{ [key: string]: number }>(() => {
+  const [favoriteCountDict, setFavoriteCountDict] = useState<{ [key: string]: number }>({})
+
+  useEffect(() => {
     const storedFavoriteCountDict = localStorage.getItem("favoriteCountDict")
     if (storedFavoriteCountDict)
-      return JSON.parse(storedFavoriteCountDict)
+      setFavoriteCountDict(JSON.parse(storedFavoriteCountDict))
     else
-      return favorites.reduce((acc: { [key: string]: number }, { recipeId }) => {
-        acc[recipeId] = (acc[recipeId] || 0) + 1
-        return acc
-      }, {})
-  })
+      setFavoriteCountDict(
+        favorites.reduce((acc: { [key: string]: number }, { recipeId }) => {
+          acc[recipeId] = (acc[recipeId] || 0) + 1
+          return acc
+        }, {})
+      )
+  }, [])
 
   const toggleFavorite = (recipeId: number, userId: number) => {
     const updatedFavoriteIds = favoriteIds.includes(recipeId)

@@ -7,26 +7,16 @@
 "use client";
 
 import { recipes } from "@/mocks/recipes";
-import { favorites } from "@/mocks/favorites";
 import { RecipeCard } from "@/components/RecipeCard";
-import { useState } from "react";
+import { useFavorites } from "@/context/FavoritesContext";
 
 export default function MyCollectionPage() {
   const userId = 1;
-  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
-    return favorites.filter((f) => f.userId === userId).map((f) => f.recipeId);
-  });
+
+  const { favoriteIds } = useFavorites()
 
   const myRecipes = recipes.filter((r) => r.authorId === userId);
   const favoriteRecipes = recipes.filter((r) => favoriteIds.includes(r.id));
-
-  const toggleFavorite = (recipeId: number) => {
-    setFavoriteIds((prev) =>
-      prev.includes(recipeId)
-        ? prev.filter((id) => id !== recipeId)
-        : [...prev, recipeId]
-    );
-  };
 
   return (
     <main className="w-full min-h-screen bg-white">
@@ -44,14 +34,13 @@ export default function MyCollectionPage() {
               key={recipe.id}
               recipe={recipe}
               isFavorited={favoriteIds.includes(recipe.id)}
-              onToggleFavorite={() => toggleFavorite(recipe.id)}
             />
           ))}
         </section>
         <h2 className="text-2xl font-bold mb-10 mt-20">Favorite Recipes</h2>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
           {favoriteRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+            <RecipeCard key={recipe.id} recipe={recipe} isFavorited={true} />
           ))}
         </div>
       </div>
