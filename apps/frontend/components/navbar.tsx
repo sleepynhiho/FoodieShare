@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserProfileButton } from "@/components/auth/UserProfileButton";
 import { isAuthenticated } from "@/services/authService";
+import { SearchButton } from "./SearchButton";
 
 const NavLink = ({
   href,
@@ -82,7 +83,8 @@ export function Navbar() {
         {/* Right Side */}
         <div className="flex items-center gap-2">
           {/* Desktop: Sign in button or User Profile */}
-          <div className="hidden sm:block">
+          <SearchButton />
+          <div className="hidden md:block">
             {isLoggedIn ? (
               <UserProfileButton />
             ) : (
