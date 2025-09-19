@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Category } from "@/types";
 import {
   Utensils,
@@ -29,22 +29,34 @@ import { getUserFavorites } from "@/services/statsService";
 
 const categories = RECIPE_CATEGORIES;
 
-const defaultFilters = {
-  minCookTime: 0,
-  maxCookTime: 180, // Default max time
-  minPrepTime: 0,
-  maxPrepTime: 120, // Default max time
-  difficulty: [] as string[],
-  rating: [] as number[],
-  sortBy: "Star",
-  sortOrder: "desc" as "desc" | "asc",
-};
-
 export default function RecipesPage() {
   const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get('category') as Category | null;
-  
-  // State management
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Get initial values from URL query parameters
+  const getInitialCategory = () => searchParams.get('category') as Category | null || "All";
+  const getInitialPage = () => parseInt(searchParams.get('page') || '1', 10);
+  const getInitialSort = () => searchParams.get('sortBy') || "Star";
+  const getInitialSortOrder = () => searchParams.get('sortOrder') as "asc" | "desc" || "desc";
+  const getInitialDifficulty = () => {
+    const diff = searchParams.get('difficulty');
+    return diff ? diff.split(',').filter(Boolean) : [];
+  };
+  const getInitialRating = () => {
+    const minRating = searchParams.get('minRating');
+    return minRating ? parseFloat(minRating) : 0;
+  };
+  const getInitialCookTime = () => ({
+    min: parseInt(searchParams.get('minCookTime') || '0', 10),
+    max: parseInt(searchParams.get('maxCookTime') || '180', 10)
+  });
+  const getInitialPrepTime = () => ({
+    min: parseInt(searchParams.get('minPrepTime') || '0', 10),
+    max: parseInt(searchParams.get('maxPrepTime') || '120', 10)
+  });
+
+  // State management with URL-based initial values
   const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,19 +78,107 @@ export default function RecipesPage() {
     Beverage: <Coffee size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
   };
 
-  // UI State
+  // UI State with URL-based initialization
   const [showFilter, setShowFilter] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | "All">(
-    categoryFromUrl || "All"
-  );
-  const [currentPage, setCurrentPage] = useState(PAGINATION_DEFAULTS.DEFAULT_PAGE);
-  const [filters, setFilters] = useState({ ...defaultFilters });
+  const [selectedCategory, setSelectedCategory] = useState<Category | "All">(getInitialCategory());
+  const [currentPage, setCurrentPage] = useState(getInitialPage());
+  const [filters, setFilters] = useState({
+    minCookTime: getInitialCookTime().min,
+    maxCookTime: getInitialCookTime().max,
+    minPrepTime: getInitialPrepTime().min,
+    maxPrepTime: getInitialPrepTime().max,
+    difficulty: getInitialDifficulty(),
+    minRating: getInitialRating(),
+    sortBy: getInitialSort(),
+    sortOrder: getInitialSortOrder(),
+  });
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState("Star");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortBy, setSortBy] = useState(getInitialSort());
+  const [sortOrder, setSortOrder] = useState(getInitialSortOrder());
   const [showOrderDropdown, setShowOrderDropdown] = useState(false);
   const { favoriteIds, setFavoriteIds } = useFavorites();
   const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
+
+  // Function to update URL with current filter state
+  const updateURL = (updates: {
+    category?: Category | "All";
+    page?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    difficulty?: string[];
+    minRating?: number;
+    minCookTime?: number;
+    maxCookTime?: number;
+    minPrepTime?: number;
+    maxPrepTime?: number;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Update or remove parameters based on values
+    if (updates.category && updates.category !== "All") {
+      params.set('category', updates.category);
+    } else if (updates.category === "All") {
+      params.delete('category');
+    }
+    
+    if (updates.page && updates.page > 1) {
+      params.set('page', updates.page.toString());
+    } else if (updates.page === 1) {
+      params.delete('page');
+    }
+    
+    if (updates.sortBy && updates.sortBy !== "Star") {
+      params.set('sortBy', updates.sortBy);
+    } else if (updates.sortBy === "Star") {
+      params.delete('sortBy');
+    }
+    
+    if (updates.sortOrder && updates.sortOrder !== "desc") {
+      params.set('sortOrder', updates.sortOrder);
+    } else if (updates.sortOrder === "desc") {
+      params.delete('sortOrder');
+    }
+    
+    if (updates.difficulty && updates.difficulty.length > 0) {
+      params.set('difficulty', updates.difficulty.join(','));
+    } else if (updates.difficulty?.length === 0) {
+      params.delete('difficulty');
+    }
+    
+    if (updates.minRating !== undefined && updates.minRating > 0) {
+      params.set('minRating', updates.minRating.toString());
+    } else if (updates.minRating === 0) {
+      params.delete('minRating');
+    }
+    
+    if (updates.minCookTime !== undefined && updates.minCookTime > 0) {
+      params.set('minCookTime', updates.minCookTime.toString());
+    } else if (updates.minCookTime === 0) {
+      params.delete('minCookTime');
+    }
+    
+    if (updates.maxCookTime !== undefined && updates.maxCookTime < 180) {
+      params.set('maxCookTime', updates.maxCookTime.toString());
+    } else if (updates.maxCookTime === 180) {
+      params.delete('maxCookTime');
+    }
+    
+    if (updates.minPrepTime !== undefined && updates.minPrepTime > 0) {
+      params.set('minPrepTime', updates.minPrepTime.toString());
+    } else if (updates.minPrepTime === 0) {
+      params.delete('minPrepTime');
+    }
+    
+    if (updates.maxPrepTime !== undefined && updates.maxPrepTime < 120) {
+      params.set('maxPrepTime', updates.maxPrepTime.toString());
+    } else if (updates.maxPrepTime === 120) {
+      params.delete('maxPrepTime');
+    }
+    
+    // Update URL without page reload
+    const newURL = `${pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    router.replace(newURL);
+  };
 
   // Load recipes from API
   const loadRecipes = async () => {
@@ -91,14 +191,47 @@ export default function RecipesPage() {
         limit: PAGE_SIZE,
       };
 
+      // Map frontend sort values to backend enum values
+      if (filters.sortBy === "Star") {
+        // Backend doesn't support avgRating sorting, default to createdAt
+        params.sortBy = "createdAt";
+      } else if (filters.sortBy === "Time") {
+        params.sortBy = "cookingTime";
+      } else if (filters.sortBy === "Title") {
+        params.sortBy = "title";
+      } else {
+        params.sortBy = "createdAt"; // fallback
+      }
+      
+      params.sortOrder = filters.sortOrder;
+
       // Add category filter if selected
       if (selectedCategory !== "All") {
         params.category = selectedCategory;
       }
 
-      // Add difficulty filter
+      // Add difficulty filter - backend expects single value, take first selected
       if (filters.difficulty.length > 0) {
-        params.difficulty = filters.difficulty.join(',');
+        params.difficulty = filters.difficulty[0]; // Only send first difficulty
+      }
+
+      // Add time filters
+      if (filters.minCookTime > 0) {
+        params.minCookingTime = filters.minCookTime;
+      }
+      if (filters.maxCookTime < 180) {
+        params.maxCookingTime = filters.maxCookTime;
+      }
+      if (filters.minPrepTime > 0) {
+        params.minPrepTime = filters.minPrepTime;
+      }
+      if (filters.maxPrepTime < 120) {
+        params.maxPrepTime = filters.maxPrepTime;
+      }
+
+      // Add rating filters
+      if (filters.minRating > 0) {
+        params.minRating = filters.minRating;
       }
 
       const response = await getRecipes(params);
@@ -111,16 +244,6 @@ export default function RecipesPage() {
       setRecipes(recipes);
       setTotalRecipes(total);
       
-      // Update max cook/prep times based on loaded recipes
-      if (recipes && recipes.length > 0) {
-        const maxCook = Math.max(...recipes.map((r: any) => r.cookingTime || 0));
-        const maxPrep = Math.max(...recipes.map((r: any) => r.prepTime || 0));
-        setFilters(prev => ({
-          ...prev,
-          maxCookTime: Math.max(prev.maxCookTime, maxCook),
-          maxPrepTime: Math.max(prev.maxPrepTime, maxPrep)
-        }));
-      }
     } catch (err) {
       console.error('Error loading recipes:', err);
       setError('Failed to load recipes. Please try again.');
@@ -148,23 +271,37 @@ export default function RecipesPage() {
   // Effects
   useEffect(() => {
     loadRecipes();
-  }, [currentPage, selectedCategory, filters.difficulty]);
+  }, [currentPage, selectedCategory, filters.difficulty, filters.minRating, filters.sortBy, filters.sortOrder, filters.minCookTime, filters.maxCookTime, filters.minPrepTime, filters.maxPrepTime]);
 
   useEffect(() => {
     loadUserFavorites();
   }, []);
 
-  // Update URL category when category changes
+  // Sync URL parameters with state when URL changes
   useEffect(() => {
-    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
-      setSelectedCategory(categoryFromUrl);
-    }
-  }, [categoryFromUrl]);
+    setSelectedCategory(getInitialCategory());
+    setCurrentPage(getInitialPage());
+    setFilters({
+      minCookTime: getInitialCookTime().min,
+      maxCookTime: getInitialCookTime().max,
+      minPrepTime: getInitialPrepTime().min,
+      maxPrepTime: getInitialPrepTime().max,
+      difficulty: getInitialDifficulty(),
+      minRating: getInitialRating(),
+      sortBy: getInitialSort(),
+      sortOrder: getInitialSortOrder(),
+    });
+    setSortBy(getInitialSort());
+    setSortOrder(getInitialSortOrder());
+  }, [searchParams]);
 
   // Reset page when filters change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory, filters]);
+    if (currentPage > 1) {
+      setCurrentPage(1);
+      updateURL({ page: 1 });
+    }
+  }, [selectedCategory, filters.difficulty, filters.minRating, filters.sortBy, filters.sortOrder, filters.minCookTime, filters.maxCookTime, filters.minPrepTime, filters.maxPrepTime]);
 
   // Close sort dropdown when clicking outside
   useEffect(() => {
@@ -207,7 +344,12 @@ export default function RecipesPage() {
                     ? "bg-[#000000] text-white"
                     : "bg-[#eaeaea] text-black"
                 }`}
-                onClick={() => setSelectedCategory(cat as Category | "All")}
+                onClick={() => {
+                  const newCategory = cat as Category | "All";
+                  setSelectedCategory(newCategory);
+                  updateURL({ category: newCategory, page: 1 });
+                  setCurrentPage(1);
+                }}
               >
                 {cat !== "All" && categoryIcons[cat]}
                 {cat === "All"
@@ -223,12 +365,47 @@ export default function RecipesPage() {
         <aside className="w-1/5 hidden md:block md:max-w-xs md:mb-0 md:mr-8 mb-6 px-4 ">
           <RecipeFilters
             filters={filters}
-            maxCookTime={filters.maxCookTime}
-            maxPrepTime={filters.maxPrepTime}
-            onChange={(update) =>
-              setFilters((prev) => ({ ...prev, ...update }))
-            }
-            onClear={() => setFilters({ ...defaultFilters })}
+            maxCookTime={180}
+            maxPrepTime={120}
+            onChange={(update) => {
+              const newFilters = { ...filters, ...update };
+              setFilters(newFilters);
+              updateURL({
+                difficulty: newFilters.difficulty,
+                minRating: newFilters.minRating,
+                minCookTime: newFilters.minCookTime,
+                maxCookTime: newFilters.maxCookTime,
+                minPrepTime: newFilters.minPrepTime,
+                maxPrepTime: newFilters.maxPrepTime,
+                page: 1
+              });
+              setCurrentPage(1);
+            }}
+            onClear={() => {
+              const clearedFilters = {
+                minCookTime: 0,
+                maxCookTime: 180,
+                minPrepTime: 0,
+                maxPrepTime: 120,
+                difficulty: [] as string[],
+                minRating: 0,
+                sortBy: "Star",
+                sortOrder: "desc" as "desc" | "asc",
+              };
+              setFilters(clearedFilters);
+              updateURL({
+                difficulty: [],
+                minRating: 0,
+                minCookTime: 0,
+                maxCookTime: 180,
+                minPrepTime: 0,
+                maxPrepTime: 120,
+                sortBy: "Star",
+                sortOrder: "desc",
+                page: 1
+              });
+              setCurrentPage(1);
+            }}
           />
         </aside>
         <div className=" flex-1 md:px-4">
@@ -245,7 +422,7 @@ export default function RecipesPage() {
                   >
                     <span className="flex items-center gap-2">
                       <span className="text-gray-500">Sort by :</span>
-                      {filters.sortBy === "Star" ? "Rating" : filters.sortBy} (
+                      {filters.sortBy === "Star" ? "Rating" : filters.sortBy === "Time" ? "Cooking Time" : filters.sortBy === "Title" ? "Name" : filters.sortBy} (
                       {filters.sortOrder === "desc"
                         ? "High to Low"
                         : "Low to High"}
@@ -276,7 +453,7 @@ export default function RecipesPage() {
                       {[
                         {
                           key: "Star",
-                          label: "Rating",
+                          label: "Rating (by date)", // Note: sorts by date since backend doesn't support avgRating
                           icon: (
                             <Star size={18} className="text-[#ffa319] mr-2" />
                           ),
@@ -305,12 +482,13 @@ export default function RecipesPage() {
                           className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#f1f1f1] transition-colors ${
                             filters.sortBy === option.key ? "bg-[#fff7e6]" : ""
                           }`}
-                          onClick={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              sortBy: option.key,
-                            }))
-                          }
+                          onClick={() => {
+                            const newSortBy = option.key;
+                            setFilters((prev) => ({ ...prev, sortBy: newSortBy }));
+                            setSortBy(newSortBy);
+                            updateURL({ sortBy: newSortBy, page: 1 });
+                            setCurrentPage(1);
+                          }}
                         >
                           {option.icon}
                           <span>{option.label}</span>
@@ -369,12 +547,13 @@ export default function RecipesPage() {
                               ? "bg-[#fff7e6]"
                               : ""
                           }`}
-                          onClick={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              sortOrder: option.key as "desc" | "asc",
-                            }))
-                          }
+                          onClick={() => {
+                            const newSortOrder = option.key as "desc" | "asc";
+                            setFilters((prev) => ({ ...prev, sortOrder: newSortOrder }));
+                            setSortOrder(newSortOrder);
+                            updateURL({ sortOrder: newSortOrder, page: 1 });
+                            setCurrentPage(1);
+                          }}
                         >
                           {option.icon}
                           <span>{option.label}</span>
@@ -454,12 +633,47 @@ export default function RecipesPage() {
                       <h2 className="text-lg font-semibold mb-4">Filter</h2>
                       <RecipeFilters
                         filters={filters}
-                        maxCookTime={filters.maxCookTime}
-                        maxPrepTime={filters.maxPrepTime}
-                        onChange={(update) =>
-                          setFilters((prev) => ({ ...prev, ...update }))
-                        }
-                        onClear={() => setFilters({ ...defaultFilters })}
+                        maxCookTime={180}
+                        maxPrepTime={120}
+                        onChange={(update) => {
+                          const newFilters = { ...filters, ...update };
+                          setFilters(newFilters);
+                          updateURL({
+                            difficulty: newFilters.difficulty,
+                            minRating: newFilters.minRating,
+                            minCookTime: newFilters.minCookTime,
+                            maxCookTime: newFilters.maxCookTime,
+                            minPrepTime: newFilters.minPrepTime,
+                            maxPrepTime: newFilters.maxPrepTime,
+                            page: 1
+                          });
+                          setCurrentPage(1);
+                        }}
+                        onClear={() => {
+                          const clearedFilters = {
+                            minCookTime: 0,
+                            maxCookTime: 180,
+                            minPrepTime: 0,
+                            maxPrepTime: 120,
+                            difficulty: [] as string[],
+                            minRating: 0,
+                            sortBy: "Star",
+                            sortOrder: "desc" as "desc" | "asc",
+                          };
+                          setFilters(clearedFilters);
+                          updateURL({
+                            difficulty: [],
+                            minRating: 0,
+                            minCookTime: 0,
+                            maxCookTime: 180,
+                            minPrepTime: 0,
+                            maxPrepTime: 120,
+                            sortBy: "Star",
+                            sortOrder: "desc",
+                            page: 1
+                          });
+                          setCurrentPage(1);
+                        }}
                       />
                     </div>
                   </>
@@ -501,7 +715,10 @@ export default function RecipesPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              updateURL({ page });
+            }}
           />
         </div>
       </div>

@@ -78,6 +78,13 @@ export class GetRecipesQueryDto {
   maxServings?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(5)
+  minRating?: number;
+
+  @IsOptional()
   @IsString()
   authorId?: string; // Filter by specific author
 
