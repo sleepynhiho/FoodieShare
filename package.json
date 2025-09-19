@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "concurrently --names \"FRONTEND,BACKEND\" --prefix-colors \"cyan,green\" \"pnpm dev:frontend\" \"pnpm dev:backend\"",
     "dev:frontend": "pnpm -C apps/frontend dev",
     "dev:backend": "pnpm -C apps/backend dev",
     "build:frontend": "pnpm -C apps/frontend build",
@@ -19,7 +20,8 @@
   "engines": {
     "node": ">=18.17.0",
     "pnpm": ">=9"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
-
-

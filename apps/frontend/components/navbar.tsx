@@ -72,9 +72,6 @@ export function Navbar() {
           <NavLink href="/recipes" active={pathname?.startsWith("/recipes")}>
             Recipes
           </NavLink>
-          <NavLink href="/add-recipe" active={pathname === "/add-recipe"}>
-            Add Recipe
-          </NavLink>
           <NavLink href="/my-collection" active={pathname === "/my-collection"}>
             My Collection
           </NavLink>
@@ -84,6 +81,17 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {/* Desktop: Sign in button or User Profile */}
           <SearchButton />
+          {/* Add Recipe CTA for logged-in users */}
+          {isLoggedIn && (
+            <Link href="/add-recipe" className="hidden md:block">
+              <Button
+                size="sm"
+                className="bg-orange-500 text-white hover:bg-orange-600 font-medium px-4"
+              >
+                + Add Recipe
+              </Button>
+            </Link>
+          )}
           <div className="hidden md:block">
             {isLoggedIn ? (
               <UserProfileButton />
@@ -162,13 +170,6 @@ export function Navbar() {
                   Recipes
                 </NavLink>
                 <NavLink
-                  href="/add-recipe"
-                  active={pathname === "/add-recipe"}
-                  onClick={toggleSidebar}
-                >
-                  Add Recipe
-                </NavLink>
-                <NavLink
                   href="/my-collection"
                   active={pathname === "/my-collection"}
                   onClick={toggleSidebar}
@@ -176,7 +177,18 @@ export function Navbar() {
                   My Collection
                 </NavLink>
               </nav>
-              <div className="mt-auto pt-4">
+              <div className="mt-auto pt-4 space-y-3">
+                {/* Add Recipe CTA for mobile */}
+                {isLoggedIn && (
+                  <Link href="/add-recipe" onClick={toggleSidebar}>
+                    <Button
+                      size="sm"
+                      className="w-full bg-orange-500 text-white hover:bg-orange-600 font-medium"
+                    >
+                      + Add Recipe
+                    </Button>
+                  </Link>
+                )}
                 {isLoggedIn ? (
                   <UserProfileButton />
                 ) : (
