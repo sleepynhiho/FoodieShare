@@ -30,8 +30,8 @@ export interface RecipeStep {
 
 export type Difficulty = "Easy" | "Medium" | "Hard";
 export type Category =
-  | "Main Dish"
-  | "Side Dish"
+  | "MainDish"
+  | "SideDish"
   | "Dessert"
   | "Soup"
   | "Salad"
@@ -96,6 +96,7 @@ export enum IngredientUnit {
 
 export type GeneralInfoRef = {
   getData: () => GeneralInfo;
+  getImageFile: () => File | null;
 };
 
 export type IngredientsRef = {
