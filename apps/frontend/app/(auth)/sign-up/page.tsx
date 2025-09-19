@@ -88,8 +88,7 @@ export default function SignUpPage() {
       toast.success('Account created successfully. Please check your email to confirm.')
       setTimeout(() => router.push("/login"), 4000); // Redirect to login page
     } catch (err: any) {
-      toast.error('Signup failed. Please try again.');
-      console.error("Signup error:", err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
