@@ -52,6 +52,18 @@ export const getCurrentUser = () => {
   return userStr ? JSON.parse(userStr) : null;
 };
 
+export const refreshUserData = async () => {
+  try {
+    const response = await axiosClient.get("/auth/profile");
+    // Update localStorage with fresh data
+    localStorage.setItem("user", JSON.stringify(response.data));
+    return response.data;
+  } catch (error: any) {
+    console.error("Error refreshing user data:", error);
+    return getCurrentUser(); // fallback to localStorage data
+  }
+};
+
 export const isAuthenticated = () => {
   return !!localStorage.getItem("token");
 };

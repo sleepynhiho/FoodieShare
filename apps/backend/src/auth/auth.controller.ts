@@ -1,5 +1,6 @@
-import { Controller, Res, Post, Body, HttpCode } from "@nestjs/common";
-import type { Response } from "express";
+import { Controller, Res, Post, Body, HttpCode, Get, Patch, UseGuards, Req, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response, Request } from "express";
 import { CreateUserDto } from "./dto/signup.dto";
 import { EmailDto } from "src/email/dto/email.dto";
 import { SignupService } from "./signup/signup.service";
@@ -10,6 +11,11 @@ import { LoginDto } from "./dto/login.dto";
 import { LoginService } from "./login/login.service";
 import { LogoutService } from "./logout/logout.service";
 import { UserNotFoundException } from "src/common/exceptions/user-not-found.exception";
+import { AuthGuard } from "./auth.guard";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+import { ProfileService } from "./profile.service";
+import { CloudinaryService } from "../cloudinary/cloudinary.service";
 
 @Controller("auth")
 export class AuthController {
@@ -17,7 +23,9 @@ export class AuthController {
     private readonly signupService: SignupService,
     private readonly resendEmailService: EmailService,
     private readonly loginService: LoginService,
-    private readonly logoutService: LogoutService
+    private readonly logoutService: LogoutService,
+    private readonly profileService: ProfileService,
+    private readonly cloudinaryService: CloudinaryService
   ) {}
 
   @Post("signup")
@@ -60,5 +68,67 @@ export class AuthController {
     response.clearCookie("accessToken"); 
     response.clearCookie("refreshToken"); 
     return res;
+  }
+
+  @Get("profile")
+  @UseGuards(AuthGuard)
+  async getProfile(@Req() request: Request) {
+    return request.user;
+  }
+
+  @Patch("profile")
+  @UseGuards(AuthGuard)
+  async updateProfile(@Req() request: Request, @Body() dto: UpdateProfileDto) {
+    try {
+      const updatedProfile = await this.profileService.updateProfile(request.user.id, dto);
+      return updatedProfile;
+    } catch (error) {
+      throw new ServerException(error.message || "Failed to update profile");
+    }
+  }
+
+  @Patch("change-password")
+  @UseGuards(AuthGuard)
+  async changePassword(@Req() request: Request, @Body() dto: ChangePasswordDto) {
+    try {
+      const result = await this.profileService.changePassword(request.user.id, dto);
+      return result;
+    } catch (error) {
+      throw new ServerException(error.message || "Failed to change password");
+    }
+  }
+
+  @Post("upload-avatar")
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  async uploadAvatar(@Req() request: Request, @UploadedFile() file: Express.Multer.File) {
+    try {
+      if (!file) {
+        throw new Error("No file provided");
+      }
+
+      // Validate file type
+      if (!file.mimetype.startsWith('image/')) {
+        throw new Error("File must be an image");
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("File size must be less than 5MB");
+      }
+
+      // Upload to Cloudinary
+      const avatarUrl = await this.cloudinaryService.uploadFile(file, 'avatars');
+      
+      // Update user avatar in database
+      const updatedUser = await this.profileService.updateAvatar(request.user.id, avatarUrl);
+      
+      return { 
+        avatarUrl,
+        user: updatedUser
+      };
+    } catch (error) {
+      throw new ServerException(error.message || "Failed to upload avatar");
+    }
   }
 }
