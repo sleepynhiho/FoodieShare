@@ -121,6 +121,19 @@ export const getRecipe = async (id: string) => {
 };
 
 /**
+ * Get a random recipe
+ */
+export const getRandomRecipe = async () => {
+  try {
+    const response = await axiosClient.get('/recipes/random');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching random recipe:', error);
+    throw error;
+  }
+};
+
+/**
  * Update a recipe
  */
 export const updateRecipe = async (id: string, data: Partial<CreateRecipeRequest>) => {

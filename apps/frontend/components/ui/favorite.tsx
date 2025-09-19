@@ -3,14 +3,14 @@ import { Heart } from "lucide-react";
 
 interface FavoriteProps {
   isFavorited: boolean;
-  recipeId: number;
-  toggleFavorite: (recipeId: number, userId: number) => void;
+  recipeId: string | number; // Accept both types
+  toggleFavorite: (recipeId: string | number, userId?: number) => void;
   isSmall?: boolean;
 }
 
 export default function Favorite({
   isFavorited = false,
-  recipeId = 1,
+  recipeId = "1",
   toggleFavorite,
   isSmall = false
 }: FavoriteProps) {

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Category } from "@/types";
 import {
   Utensils,
@@ -14,8 +15,6 @@ import {
   AArrowUp,
   CaseSensitive,
 } from "lucide-react";
-import { recipes } from "@/mocks/recipes";
-import { favorites } from "@/mocks/favorites";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Pagination } from "@/components/Pagination";
 import {
@@ -24,188 +23,287 @@ import {
   PAGINATION_DEFAULTS,
 } from "@/lib/constants";
 import { RecipeFilters } from "@/components/RecipeFilters";
-import { ratings } from "@/mocks/ratings";
 import { useFavorites } from "@/context/FavoritesContext";
+import { getRecipes } from "@/services/recipeService";
+import { getUserFavorites } from "@/services/statsService";
 
 const categories = RECIPE_CATEGORIES;
-const maxCookTime = Math.max(...recipes.map((r) => r.cookTime));
-const maxPrepTime = Math.max(...recipes.map((r) => r.prepTime));
-const defaultFilters = {
-  minCookTime: 0,
-  maxCookTime: maxCookTime,
-  minPrepTime: 0,
-  maxPrepTime: maxPrepTime,
-  difficulty: [] as string[],
-  rating: [] as number[],
-  sortBy: "Star",
-  sortOrder: "desc" as "desc" | "asc",
-};
 
 export default function RecipesPage() {
-  // Icons for each category
-  const categoryIcons: Record<string, React.ReactNode> = {
-    MainDish: (
-      <Utensils
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    SideDish: (
-      <Sandwich
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Dessert: (
-      <CakeSlice
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Soup: (
-      <Soup
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Salad: (
-      <Salad
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Appetizer: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="inline-block mr-2"
-      >
-        <circle
-          cx="10"
-          cy="10"
-          r="6"
-          stroke="#ffa319"
-          strokeWidth="1"
-          fill="none"
-        />
-        <circle
-          cx="10"
-          cy="10"
-          r="2"
-          stroke="#ffa319"
-          strokeWidth="2"
-          fill="none"
-        />
-      </svg>
-    ),
-    Beverage: (
-      <Coffee
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Get initial values from URL query parameters
+  const getInitialCategory = () => searchParams.get('category') as Category | null || "All";
+  const getInitialPage = () => parseInt(searchParams.get('page') || '1', 10);
+  const getInitialSort = () => searchParams.get('sortBy') || "Star";
+  const getInitialSortOrder = () => searchParams.get('sortOrder') as "asc" | "desc" || "desc";
+  const getInitialDifficulty = () => {
+    const diff = searchParams.get('difficulty');
+    return diff ? diff.split(',').filter(Boolean) : [];
   };
-  const [showFilter, setShowFilter] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | "All">(
-    "All"
-  );
-  const [currentPage, setCurrentPage] = useState(
-    PAGINATION_DEFAULTS.DEFAULT_PAGE
-  );
-  const [filters, setFilters] = useState({ ...defaultFilters });
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState("Star"); // hoặc lấy từ filters nếu bạn dùng object
-  const [sortOrder, setSortOrder] = useState("desc"); // "desc" = High to Low, "asc" = Low to High
-  const [showOrderDropdown, setShowOrderDropdown] = useState(false);
-  const { favoriteIds, setFavoriteIds } = useFavorites()
-  const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
-
-  console.log(favoriteIds)
-
-  // Check if localStorage has favorites
-  useEffect(() => {
-    const storedFavorites = localStorage.getItem(`favorites_user_${1}`);
-    if (storedFavorites)
-      setFavoriteIds(JSON.parse(storedFavorites))
-    else 
-      setFavoriteIds(
-        favorites
-          .filter((f) => f.userId === 1)
-          .map((f) => f.recipeId)
-      )
-  }, [])
-
-  // Tính rating trung bình cho mỗi recipe
-  const getAvgRating = (recipeId: number) => {
-    const recipeRatings = ratings.filter((r) => r.recipeId === recipeId);
-    if (recipeRatings.length === 0) return 0;
-    return (
-      recipeRatings.reduce((sum, r) => sum + r.score, 0) / recipeRatings.length
-    );
+  const getInitialRating = () => {
+    const minRating = searchParams.get('minRating');
+    return minRating ? parseFloat(minRating) : 0;
   };
-
-  // Lọc theo category và các filter
-  const filteredRecipes = recipes
-    .filter(
-      (recipe) =>
-        selectedCategory === "All" || recipe.category === selectedCategory
-    )
-    .filter(
-      (recipe) =>
-        recipe.cookTime >= filters.minCookTime &&
-        recipe.cookTime <= filters.maxCookTime &&
-        recipe.prepTime >= filters.minPrepTime &&
-        recipe.prepTime <= filters.maxPrepTime
-    )
-    .filter(
-      (recipe) =>
-        filters.difficulty.length === 0 ||
-        filters.difficulty.includes(recipe.difficulty)
-    )
-    .filter((recipe) => {
-      const avgRating = getAvgRating(recipe.id);
-      return (
-        filters.rating.length === 0 ||
-        filters.rating.some((r) => (r === 0 ? avgRating < 1 : avgRating >= r))
-      );
-    });
-
-  // Sắp xếp công thức theo tiêu chí đã chọn
-  const sortedRecipes = [...filteredRecipes].sort((a, b) => {
-    let compare = 0;
-    if (filters.sortBy === "Star") {
-      compare = getAvgRating(b.id) - getAvgRating(a.id);
-    } else if (filters.sortBy === "Time") {
-      compare = a.cookTime + a.prepTime - (b.cookTime + b.prepTime);
-    } else if (filters.sortBy === "Title") {
-      compare = a.title.localeCompare(b.title);
-    }
-    // Nếu order là asc thì đảo ngược kết quả
-    return filters.sortOrder === "asc" ? -compare : compare;
+  const getInitialCookTime = () => ({
+    min: parseInt(searchParams.get('minCookTime') || '0', 10),
+    max: parseInt(searchParams.get('maxCookTime') || '180', 10)
+  });
+  const getInitialPrepTime = () => ({
+    min: parseInt(searchParams.get('minPrepTime') || '0', 10),
+    max: parseInt(searchParams.get('maxPrepTime') || '120', 10)
   });
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(sortedRecipes.length / PAGE_SIZE);
-  const paginatedRecipes = sortedRecipes.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  // State management with URL-based initial values
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalRecipes, setTotalRecipes] = useState(0);
 
-  // Đóng dropdown sort khi click ra ngoài
+  // Icons for each category
+  const categoryIcons: Record<string, React.ReactNode> = {
+    MainDish: <Utensils size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    SideDish: <Sandwich size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Dessert: <CakeSlice size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Soup: <Soup size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Salad: <Salad size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Appetizer: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="inline-block mr-2">
+        <circle cx="10" cy="10" r="6" stroke="#ffa319" strokeWidth="1" fill="none" />
+        <circle cx="10" cy="10" r="2" stroke="#ffa319" strokeWidth="2" fill="none" />
+      </svg>
+    ),
+    Beverage: <Coffee size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+  };
+
+  // UI State with URL-based initialization
+  const [showFilter, setShowFilter] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | "All">(getInitialCategory());
+  const [currentPage, setCurrentPage] = useState(getInitialPage());
+  const [filters, setFilters] = useState({
+    minCookTime: getInitialCookTime().min,
+    maxCookTime: getInitialCookTime().max,
+    minPrepTime: getInitialPrepTime().min,
+    maxPrepTime: getInitialPrepTime().max,
+    difficulty: getInitialDifficulty(),
+    minRating: getInitialRating(),
+    sortBy: getInitialSort(),
+    sortOrder: getInitialSortOrder(),
+  });
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [sortBy, setSortBy] = useState(getInitialSort());
+  const [sortOrder, setSortOrder] = useState(getInitialSortOrder());
+  const [showOrderDropdown, setShowOrderDropdown] = useState(false);
+  const { favoriteIds, setFavoriteIds } = useFavorites();
+  const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
+
+  // Function to update URL with current filter state
+  const updateURL = (updates: {
+    category?: Category | "All";
+    page?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    difficulty?: string[];
+    minRating?: number;
+    minCookTime?: number;
+    maxCookTime?: number;
+    minPrepTime?: number;
+    maxPrepTime?: number;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Update or remove parameters based on values
+    if (updates.category && updates.category !== "All") {
+      params.set('category', updates.category);
+    } else if (updates.category === "All") {
+      params.delete('category');
+    }
+    
+    if (updates.page && updates.page > 1) {
+      params.set('page', updates.page.toString());
+    } else if (updates.page === 1) {
+      params.delete('page');
+    }
+    
+    if (updates.sortBy && updates.sortBy !== "Star") {
+      params.set('sortBy', updates.sortBy);
+    } else if (updates.sortBy === "Star") {
+      params.delete('sortBy');
+    }
+    
+    if (updates.sortOrder && updates.sortOrder !== "desc") {
+      params.set('sortOrder', updates.sortOrder);
+    } else if (updates.sortOrder === "desc") {
+      params.delete('sortOrder');
+    }
+    
+    if (updates.difficulty && updates.difficulty.length > 0) {
+      params.set('difficulty', updates.difficulty.join(','));
+    } else if (updates.difficulty?.length === 0) {
+      params.delete('difficulty');
+    }
+    
+    if (updates.minRating !== undefined && updates.minRating > 0) {
+      params.set('minRating', updates.minRating.toString());
+    } else if (updates.minRating === 0) {
+      params.delete('minRating');
+    }
+    
+    if (updates.minCookTime !== undefined && updates.minCookTime > 0) {
+      params.set('minCookTime', updates.minCookTime.toString());
+    } else if (updates.minCookTime === 0) {
+      params.delete('minCookTime');
+    }
+    
+    if (updates.maxCookTime !== undefined && updates.maxCookTime < 180) {
+      params.set('maxCookTime', updates.maxCookTime.toString());
+    } else if (updates.maxCookTime === 180) {
+      params.delete('maxCookTime');
+    }
+    
+    if (updates.minPrepTime !== undefined && updates.minPrepTime > 0) {
+      params.set('minPrepTime', updates.minPrepTime.toString());
+    } else if (updates.minPrepTime === 0) {
+      params.delete('minPrepTime');
+    }
+    
+    if (updates.maxPrepTime !== undefined && updates.maxPrepTime < 120) {
+      params.set('maxPrepTime', updates.maxPrepTime.toString());
+    } else if (updates.maxPrepTime === 120) {
+      params.delete('maxPrepTime');
+    }
+    
+    // Update URL without page reload
+    const newURL = `${pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    router.replace(newURL);
+  };
+
+  // Load recipes from API
+  const loadRecipes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params: any = {
+        page: currentPage,
+        limit: PAGE_SIZE,
+      };
+
+      // Map frontend sort values to backend enum values
+      if (filters.sortBy === "Star") {
+        // Backend doesn't support avgRating sorting, default to createdAt
+        params.sortBy = "createdAt";
+      } else if (filters.sortBy === "Time") {
+        params.sortBy = "cookingTime";
+      } else if (filters.sortBy === "Title") {
+        params.sortBy = "title";
+      } else {
+        params.sortBy = "createdAt"; // fallback
+      }
+      
+      params.sortOrder = filters.sortOrder;
+
+      // Add category filter if selected
+      if (selectedCategory !== "All") {
+        params.category = selectedCategory;
+      }
+
+      // Add difficulty filter - backend expects single value, take first selected
+      if (filters.difficulty.length > 0) {
+        params.difficulty = filters.difficulty[0]; // Only send first difficulty
+      }
+
+      // Add time filters
+      if (filters.minCookTime > 0) {
+        params.minCookingTime = filters.minCookTime;
+      }
+      if (filters.maxCookTime < 180) {
+        params.maxCookingTime = filters.maxCookTime;
+      }
+      if (filters.minPrepTime > 0) {
+        params.minPrepTime = filters.minPrepTime;
+      }
+      if (filters.maxPrepTime < 120) {
+        params.maxPrepTime = filters.maxPrepTime;
+      }
+
+      // Add rating filters
+      if (filters.minRating > 0) {
+        params.minRating = filters.minRating;
+      }
+
+      const response = await getRecipes(params);
+      console.log('API Response:', response); // Debug log
+      
+      // Handle the response format from the API
+      const recipes = response.recipes || response.data || [];
+      const total = response.total || response.count || recipes.length;
+      
+      setRecipes(recipes);
+      setTotalRecipes(total);
+      
+    } catch (err) {
+      console.error('Error loading recipes:', err);
+      setError('Failed to load recipes. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load user favorites
+  const loadUserFavorites = async () => {
+    try {
+      const userFavorites = await getUserFavorites();
+      const favoriteRecipeIds = userFavorites.map((fav: any) => fav.recipeId); // Keep as string
+      setFavoriteIds(favoriteRecipeIds);
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+      // Fallback to localStorage or empty array
+      const storedFavorites = localStorage.getItem(`favorites_user_1`);
+      if (storedFavorites) {
+        setFavoriteIds(JSON.parse(storedFavorites));
+      }
+    }
+  };
+
+  // Effects
+  useEffect(() => {
+    loadRecipes();
+  }, [currentPage, selectedCategory, filters.difficulty, filters.minRating, filters.sortBy, filters.sortOrder, filters.minCookTime, filters.maxCookTime, filters.minPrepTime, filters.maxPrepTime]);
+
+  useEffect(() => {
+    loadUserFavorites();
+  }, []);
+
+  // Sync URL parameters with state when URL changes
+  useEffect(() => {
+    setSelectedCategory(getInitialCategory());
+    setCurrentPage(getInitialPage());
+    setFilters({
+      minCookTime: getInitialCookTime().min,
+      maxCookTime: getInitialCookTime().max,
+      minPrepTime: getInitialPrepTime().min,
+      maxPrepTime: getInitialPrepTime().max,
+      difficulty: getInitialDifficulty(),
+      minRating: getInitialRating(),
+      sortBy: getInitialSort(),
+      sortOrder: getInitialSortOrder(),
+    });
+    setSortBy(getInitialSort());
+    setSortOrder(getInitialSortOrder());
+  }, [searchParams]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    if (currentPage > 1) {
+      setCurrentPage(1);
+      updateURL({ page: 1 });
+    }
+  }, [selectedCategory, filters.difficulty, filters.minRating, filters.sortBy, filters.sortOrder, filters.minCookTime, filters.maxCookTime, filters.minPrepTime, filters.maxPrepTime]);
+
+  // Close sort dropdown when clicking outside
   useEffect(() => {
     if (!showSortDropdown) return;
     const handleClick = (e: MouseEvent) => {
@@ -217,6 +315,9 @@ export default function RecipesPage() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showSortDropdown]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalRecipes / PAGE_SIZE);
 
   return (
     <main className="w-full min-h-screen bg-white">
@@ -243,7 +344,12 @@ export default function RecipesPage() {
                     ? "bg-[#000000] text-white"
                     : "bg-[#eaeaea] text-black"
                 }`}
-                onClick={() => setSelectedCategory(cat as Category | "All")}
+                onClick={() => {
+                  const newCategory = cat as Category | "All";
+                  setSelectedCategory(newCategory);
+                  updateURL({ category: newCategory, page: 1 });
+                  setCurrentPage(1);
+                }}
               >
                 {cat !== "All" && categoryIcons[cat]}
                 {cat === "All"
@@ -259,12 +365,47 @@ export default function RecipesPage() {
         <aside className="w-1/5 hidden md:block md:max-w-xs md:mb-0 md:mr-8 mb-6 px-4 ">
           <RecipeFilters
             filters={filters}
-            maxCookTime={maxCookTime}
-            maxPrepTime={maxPrepTime}
-            onChange={(update) =>
-              setFilters((prev) => ({ ...prev, ...update }))
-            }
-            onClear={() => setFilters({ ...defaultFilters })}
+            maxCookTime={180}
+            maxPrepTime={120}
+            onChange={(update) => {
+              const newFilters = { ...filters, ...update };
+              setFilters(newFilters);
+              updateURL({
+                difficulty: newFilters.difficulty,
+                minRating: newFilters.minRating,
+                minCookTime: newFilters.minCookTime,
+                maxCookTime: newFilters.maxCookTime,
+                minPrepTime: newFilters.minPrepTime,
+                maxPrepTime: newFilters.maxPrepTime,
+                page: 1
+              });
+              setCurrentPage(1);
+            }}
+            onClear={() => {
+              const clearedFilters = {
+                minCookTime: 0,
+                maxCookTime: 180,
+                minPrepTime: 0,
+                maxPrepTime: 120,
+                difficulty: [] as string[],
+                minRating: 0,
+                sortBy: "Star",
+                sortOrder: "desc" as "desc" | "asc",
+              };
+              setFilters(clearedFilters);
+              updateURL({
+                difficulty: [],
+                minRating: 0,
+                minCookTime: 0,
+                maxCookTime: 180,
+                minPrepTime: 0,
+                maxPrepTime: 120,
+                sortBy: "Star",
+                sortOrder: "desc",
+                page: 1
+              });
+              setCurrentPage(1);
+            }}
           />
         </aside>
         <div className=" flex-1 md:px-4">
@@ -281,7 +422,7 @@ export default function RecipesPage() {
                   >
                     <span className="flex items-center gap-2">
                       <span className="text-gray-500">Sort by :</span>
-                      {filters.sortBy === "Star" ? "Rating" : filters.sortBy} (
+                      {filters.sortBy === "Star" ? "Rating" : filters.sortBy === "Time" ? "Cooking Time" : filters.sortBy === "Title" ? "Name" : filters.sortBy} (
                       {filters.sortOrder === "desc"
                         ? "High to Low"
                         : "Low to High"}
@@ -312,7 +453,7 @@ export default function RecipesPage() {
                       {[
                         {
                           key: "Star",
-                          label: "Rating",
+                          label: "Rating (by date)", // Note: sorts by date since backend doesn't support avgRating
                           icon: (
                             <Star size={18} className="text-[#ffa319] mr-2" />
                           ),
@@ -341,12 +482,13 @@ export default function RecipesPage() {
                           className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#f1f1f1] transition-colors ${
                             filters.sortBy === option.key ? "bg-[#fff7e6]" : ""
                           }`}
-                          onClick={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              sortBy: option.key,
-                            }))
-                          }
+                          onClick={() => {
+                            const newSortBy = option.key;
+                            setFilters((prev) => ({ ...prev, sortBy: newSortBy }));
+                            setSortBy(newSortBy);
+                            updateURL({ sortBy: newSortBy, page: 1 });
+                            setCurrentPage(1);
+                          }}
                         >
                           {option.icon}
                           <span>{option.label}</span>
@@ -405,12 +547,13 @@ export default function RecipesPage() {
                               ? "bg-[#fff7e6]"
                               : ""
                           }`}
-                          onClick={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              sortOrder: option.key as "desc" | "asc",
-                            }))
-                          }
+                          onClick={() => {
+                            const newSortOrder = option.key as "desc" | "asc";
+                            setFilters((prev) => ({ ...prev, sortOrder: newSortOrder }));
+                            setSortOrder(newSortOrder);
+                            updateURL({ sortOrder: newSortOrder, page: 1 });
+                            setCurrentPage(1);
+                          }}
                         >
                           {option.icon}
                           <span>{option.label}</span>
@@ -490,12 +633,47 @@ export default function RecipesPage() {
                       <h2 className="text-lg font-semibold mb-4">Filter</h2>
                       <RecipeFilters
                         filters={filters}
-                        maxCookTime={maxCookTime}
-                        maxPrepTime={maxPrepTime}
-                        onChange={(update) =>
-                          setFilters((prev) => ({ ...prev, ...update }))
-                        }
-                        onClear={() => setFilters({ ...defaultFilters })}
+                        maxCookTime={180}
+                        maxPrepTime={120}
+                        onChange={(update) => {
+                          const newFilters = { ...filters, ...update };
+                          setFilters(newFilters);
+                          updateURL({
+                            difficulty: newFilters.difficulty,
+                            minRating: newFilters.minRating,
+                            minCookTime: newFilters.minCookTime,
+                            maxCookTime: newFilters.maxCookTime,
+                            minPrepTime: newFilters.minPrepTime,
+                            maxPrepTime: newFilters.maxPrepTime,
+                            page: 1
+                          });
+                          setCurrentPage(1);
+                        }}
+                        onClear={() => {
+                          const clearedFilters = {
+                            minCookTime: 0,
+                            maxCookTime: 180,
+                            minPrepTime: 0,
+                            maxPrepTime: 120,
+                            difficulty: [] as string[],
+                            minRating: 0,
+                            sortBy: "Star",
+                            sortOrder: "desc" as "desc" | "asc",
+                          };
+                          setFilters(clearedFilters);
+                          updateURL({
+                            difficulty: [],
+                            minRating: 0,
+                            minCookTime: 0,
+                            maxCookTime: 180,
+                            minPrepTime: 0,
+                            maxPrepTime: 120,
+                            sortBy: "Star",
+                            sortOrder: "desc",
+                            page: 1
+                          });
+                          setCurrentPage(1);
+                        }}
                       />
                     </div>
                   </>
@@ -505,10 +683,27 @@ export default function RecipesPage() {
           </div>
 
           <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5 justify-center md:justify-start">
-            {paginatedRecipes.length === 0 ? (
-              <div className="col-span-4 text-gray-500">No recipes found.</div>
+            {loading ? (
+              <div className="col-span-full text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                <p className="mt-2 text-gray-600">Loading recipes...</p>
+              </div>
+            ) : error ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button 
+                  onClick={loadRecipes}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : recipes.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No recipes found for the selected criteria.</p>
+              </div>
             ) : (
-              paginatedRecipes.map((recipe) => (
+              recipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
@@ -520,7 +715,10 @@ export default function RecipesPage() {
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              updateURL({ page });
+            }}
           />
         </div>
       </div>

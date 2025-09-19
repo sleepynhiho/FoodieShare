@@ -9,7 +9,7 @@ interface RecipeFiltersProps {
     minPrepTime: number;
     maxPrepTime: number;
     difficulty: string[];
-    rating: number[];
+    minRating: number;
     sortBy: string;
     sortOrder?: "asc" | "desc";
   };
@@ -110,37 +110,26 @@ export const RecipeFilters: React.FC<RecipeFiltersProps> = ({
                 className="flex items-center gap-2 cursor-pointer select-none mb-2"
               >
                 <input
-                  type="checkbox"
+                  type="radio"
+                  name="difficulty"
                   checked={checked}
                   onChange={() => {
+                    // Use radio button logic - only one can be selected
                     onChange({
-                      difficulty: !checked
-                        ? [...filters.difficulty, dif]
-                        : filters.difficulty.filter((d) => d !== dif),
+                      difficulty: checked ? [] : [dif], // Toggle: if already selected, clear it; otherwise select only this one
                     });
                   }}
                   className="hidden"
                 />
                 <span
-                  className={`w-6 h-6 flex items-center justify-center rounded border transition-colors ${
+                  className={`w-6 h-6 flex items-center justify-center rounded-full border transition-colors ${
                     checked
                       ? "bg-[#ffa319] border-[#ffa319]"
                       : "bg-white border-gray-300"
                   }`}
                 >
                   {checked && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="white"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086l-3.793-3.793a1 1 0 00-1.414 1.414l4.5 4.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <div className="w-3 h-3 rounded-full bg-white"></div>
                   )}
                 </span>
                 <span className="text-xs font-normal">{dif}</span>
@@ -155,48 +144,37 @@ export const RecipeFilters: React.FC<RecipeFiltersProps> = ({
         {/* Mobile: 1 cột, md trở lên: 2 cột */}
         <div className="flex flex-col w-full md:grid md:grid-cols-2 md:gap-2">
           {RATINGS.map((r) => {
-            const checked = filters.rating.includes(r);
+            const checked = filters.minRating === r;
             return (
               <label
                 key={r}
                 className="flex items-center gap-2 cursor-pointer select-none mb-2"
               >
                 <input
-                  type="checkbox"
+                  type="radio"
+                  name="rating"
                   checked={checked}
                   onChange={() => {
+                    // Use radio button logic - only one can be selected
                     onChange({
-                      rating: !checked
-                        ? [...filters.rating, r]
-                        : filters.rating.filter((val) => val !== r),
+                      minRating: checked ? 0 : r, // Toggle: if already selected, reset to 0; otherwise select this rating
                     });
                   }}
                   className="hidden"
                 />
                 <span
-                  className={`w-6 h-6 flex items-center justify-center rounded border transition-colors ${
+                  className={`w-6 h-6 flex items-center justify-center rounded-full border transition-colors ${
                     checked
                       ? "bg-[#ffa319] border-[#ffa319]"
                       : "bg-white border-gray-300"
                   }`}
                 >
                   {checked && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="white"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 00-1.414 0L8.5 12.086l-3.793-3.793a1 1 0 00-1.414 1.414l4.5 4.5a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <div className="w-3 h-3 rounded-full bg-white"></div>
                   )}
                 </span>
                 <span className="text-xs font-normal">
-                  {r === 0 ? "< 1 star" : r === 5 ? "5 stars" : `${r} stars  `}
+                  {r === 0 ? "All ratings" : `${r}+ stars`}
                 </span>
               </label>
             );
