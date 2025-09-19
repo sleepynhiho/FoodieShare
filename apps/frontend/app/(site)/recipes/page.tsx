@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useSearchParams } from 'next/navigation';
 import { Category } from "@/types";
 import {
   Utensils,
@@ -14,8 +15,6 @@ import {
   AArrowUp,
   CaseSensitive,
 } from "lucide-react";
-import { recipes } from "@/mocks/recipes";
-import { favorites } from "@/mocks/favorites";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Pagination } from "@/components/Pagination";
 import {
@@ -24,17 +23,17 @@ import {
   PAGINATION_DEFAULTS,
 } from "@/lib/constants";
 import { RecipeFilters } from "@/components/RecipeFilters";
-import { ratings } from "@/mocks/ratings";
 import { useFavorites } from "@/context/FavoritesContext";
+import { getRecipes } from "@/services/recipeService";
+import { getUserFavorites } from "@/services/statsService";
 
 const categories = RECIPE_CATEGORIES;
-const maxCookTime = Math.max(...recipes.map((r) => r.cookTime));
-const maxPrepTime = Math.max(...recipes.map((r) => r.prepTime));
+
 const defaultFilters = {
   minCookTime: 0,
-  maxCookTime: maxCookTime,
+  maxCookTime: 180, // Default max time
   minPrepTime: 0,
-  maxPrepTime: maxPrepTime,
+  maxPrepTime: 120, // Default max time
   difficulty: [] as string[],
   rating: [] as number[],
   sortBy: "Star",
@@ -42,170 +41,132 @@ const defaultFilters = {
 };
 
 export default function RecipesPage() {
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get('category') as Category | null;
+  
+  // State management
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalRecipes, setTotalRecipes] = useState(0);
+
   // Icons for each category
   const categoryIcons: Record<string, React.ReactNode> = {
-    MainDish: (
-      <Utensils
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    SideDish: (
-      <Sandwich
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Dessert: (
-      <CakeSlice
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Soup: (
-      <Soup
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
-    Salad: (
-      <Salad
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
+    MainDish: <Utensils size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    SideDish: <Sandwich size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Dessert: <CakeSlice size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Soup: <Soup size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
+    Salad: <Salad size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
     Appetizer: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="inline-block mr-2"
-      >
-        <circle
-          cx="10"
-          cy="10"
-          r="6"
-          stroke="#ffa319"
-          strokeWidth="1"
-          fill="none"
-        />
-        <circle
-          cx="10"
-          cy="10"
-          r="2"
-          stroke="#ffa319"
-          strokeWidth="2"
-          fill="none"
-        />
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="inline-block mr-2">
+        <circle cx="10" cy="10" r="6" stroke="#ffa319" strokeWidth="1" fill="none" />
+        <circle cx="10" cy="10" r="2" stroke="#ffa319" strokeWidth="2" fill="none" />
       </svg>
     ),
-    Beverage: (
-      <Coffee
-        size={20}
-        strokeWidth={1}
-        color="#ffa319"
-        className="inline-block mr-2"
-      />
-    ),
+    Beverage: <Coffee size={20} strokeWidth={1} color="#ffa319" className="inline-block mr-2" />,
   };
+
+  // UI State
   const [showFilter, setShowFilter] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | "All">(
-    "All"
+    categoryFromUrl || "All"
   );
-  const [currentPage, setCurrentPage] = useState(
-    PAGINATION_DEFAULTS.DEFAULT_PAGE
-  );
+  const [currentPage, setCurrentPage] = useState(PAGINATION_DEFAULTS.DEFAULT_PAGE);
   const [filters, setFilters] = useState({ ...defaultFilters });
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [sortBy, setSortBy] = useState("Star"); // hoặc lấy từ filters nếu bạn dùng object
-  const [sortOrder, setSortOrder] = useState("desc"); // "desc" = High to Low, "asc" = Low to High
+  const [sortBy, setSortBy] = useState("Star");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [showOrderDropdown, setShowOrderDropdown] = useState(false);
-  const { favoriteIds, setFavoriteIds } = useFavorites()
+  const { favoriteIds, setFavoriteIds } = useFavorites();
   const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
 
-  console.log(favoriteIds)
+  // Load recipes from API
+  const loadRecipes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params: any = {
+        page: currentPage,
+        limit: PAGE_SIZE,
+      };
 
-  // Check if localStorage has favorites
-  useEffect(() => {
-    const storedFavorites = localStorage.getItem(`favorites_user_${1}`);
-    if (storedFavorites)
-      setFavoriteIds(JSON.parse(storedFavorites))
-    else 
-      setFavoriteIds(
-        favorites
-          .filter((f) => f.userId === 1)
-          .map((f) => f.recipeId)
-      )
-  }, [])
+      // Add category filter if selected
+      if (selectedCategory !== "All") {
+        params.category = selectedCategory;
+      }
 
-  // Tính rating trung bình cho mỗi recipe
-  const getAvgRating = (recipeId: number) => {
-    const recipeRatings = ratings.filter((r) => r.recipeId === recipeId);
-    if (recipeRatings.length === 0) return 0;
-    return (
-      recipeRatings.reduce((sum, r) => sum + r.score, 0) / recipeRatings.length
-    );
+      // Add difficulty filter
+      if (filters.difficulty.length > 0) {
+        params.difficulty = filters.difficulty.join(',');
+      }
+
+      const response = await getRecipes(params);
+      console.log('API Response:', response); // Debug log
+      
+      // Handle the response format from the API
+      const recipes = response.recipes || response.data || [];
+      const total = response.total || response.count || recipes.length;
+      
+      setRecipes(recipes);
+      setTotalRecipes(total);
+      
+      // Update max cook/prep times based on loaded recipes
+      if (recipes && recipes.length > 0) {
+        const maxCook = Math.max(...recipes.map((r: any) => r.cookingTime || 0));
+        const maxPrep = Math.max(...recipes.map((r: any) => r.prepTime || 0));
+        setFilters(prev => ({
+          ...prev,
+          maxCookTime: Math.max(prev.maxCookTime, maxCook),
+          maxPrepTime: Math.max(prev.maxPrepTime, maxPrep)
+        }));
+      }
+    } catch (err) {
+      console.error('Error loading recipes:', err);
+      setError('Failed to load recipes. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Lọc theo category và các filter
-  const filteredRecipes = recipes
-    .filter(
-      (recipe) =>
-        selectedCategory === "All" || recipe.category === selectedCategory
-    )
-    .filter(
-      (recipe) =>
-        recipe.cookTime >= filters.minCookTime &&
-        recipe.cookTime <= filters.maxCookTime &&
-        recipe.prepTime >= filters.minPrepTime &&
-        recipe.prepTime <= filters.maxPrepTime
-    )
-    .filter(
-      (recipe) =>
-        filters.difficulty.length === 0 ||
-        filters.difficulty.includes(recipe.difficulty)
-    )
-    .filter((recipe) => {
-      const avgRating = getAvgRating(recipe.id);
-      return (
-        filters.rating.length === 0 ||
-        filters.rating.some((r) => (r === 0 ? avgRating < 1 : avgRating >= r))
-      );
-    });
-
-  // Sắp xếp công thức theo tiêu chí đã chọn
-  const sortedRecipes = [...filteredRecipes].sort((a, b) => {
-    let compare = 0;
-    if (filters.sortBy === "Star") {
-      compare = getAvgRating(b.id) - getAvgRating(a.id);
-    } else if (filters.sortBy === "Time") {
-      compare = a.cookTime + a.prepTime - (b.cookTime + b.prepTime);
-    } else if (filters.sortBy === "Title") {
-      compare = a.title.localeCompare(b.title);
+  // Load user favorites
+  const loadUserFavorites = async () => {
+    try {
+      const userFavorites = await getUserFavorites();
+      const favoriteRecipeIds = userFavorites.map((fav: any) => fav.recipeId); // Keep as string
+      setFavoriteIds(favoriteRecipeIds);
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+      // Fallback to localStorage or empty array
+      const storedFavorites = localStorage.getItem(`favorites_user_1`);
+      if (storedFavorites) {
+        setFavoriteIds(JSON.parse(storedFavorites));
+      }
     }
-    // Nếu order là asc thì đảo ngược kết quả
-    return filters.sortOrder === "asc" ? -compare : compare;
-  });
+  };
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(sortedRecipes.length / PAGE_SIZE);
-  const paginatedRecipes = sortedRecipes.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+  // Effects
+  useEffect(() => {
+    loadRecipes();
+  }, [currentPage, selectedCategory, filters.difficulty]);
 
-  // Đóng dropdown sort khi click ra ngoài
+  useEffect(() => {
+    loadUserFavorites();
+  }, []);
+
+  // Update URL category when category changes
+  useEffect(() => {
+    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [categoryFromUrl]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, filters]);
+
+  // Close sort dropdown when clicking outside
   useEffect(() => {
     if (!showSortDropdown) return;
     const handleClick = (e: MouseEvent) => {
@@ -217,6 +178,9 @@ export default function RecipesPage() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showSortDropdown]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(totalRecipes / PAGE_SIZE);
 
   return (
     <main className="w-full min-h-screen bg-white">
@@ -259,8 +223,8 @@ export default function RecipesPage() {
         <aside className="w-1/5 hidden md:block md:max-w-xs md:mb-0 md:mr-8 mb-6 px-4 ">
           <RecipeFilters
             filters={filters}
-            maxCookTime={maxCookTime}
-            maxPrepTime={maxPrepTime}
+            maxCookTime={filters.maxCookTime}
+            maxPrepTime={filters.maxPrepTime}
             onChange={(update) =>
               setFilters((prev) => ({ ...prev, ...update }))
             }
@@ -490,8 +454,8 @@ export default function RecipesPage() {
                       <h2 className="text-lg font-semibold mb-4">Filter</h2>
                       <RecipeFilters
                         filters={filters}
-                        maxCookTime={maxCookTime}
-                        maxPrepTime={maxPrepTime}
+                        maxCookTime={filters.maxCookTime}
+                        maxPrepTime={filters.maxPrepTime}
                         onChange={(update) =>
                           setFilters((prev) => ({ ...prev, ...update }))
                         }
@@ -505,10 +469,27 @@ export default function RecipesPage() {
           </div>
 
           <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5 justify-center md:justify-start">
-            {paginatedRecipes.length === 0 ? (
-              <div className="col-span-4 text-gray-500">No recipes found.</div>
+            {loading ? (
+              <div className="col-span-full text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                <p className="mt-2 text-gray-600">Loading recipes...</p>
+              </div>
+            ) : error ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button 
+                  onClick={loadRecipes}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : recipes.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No recipes found for the selected criteria.</p>
+              </div>
             ) : (
-              paginatedRecipes.map((recipe) => (
+              recipes.map((recipe) => (
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}

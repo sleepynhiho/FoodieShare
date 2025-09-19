@@ -1,15 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Soup, User, Clock, ChefHat, Star, HandPlatter } from "lucide-react";
 import Favorite from "@/components/ui/favorite";
 import RecipeAvgRating from "@/components/ui/avg-rating";
-import { recipes } from "@/mocks/recipes";
-import { favorites } from "@/mocks/favorites";
-import { ratings } from "@/mocks/ratings";
-import { users } from "@/mocks/users";
 import { useFavorites } from "@/context/FavoritesContext";
-import { RatingForm } from "@/components/RatingForm";
+import { getRecipe } from "@/services/recipeService";
+import { getRecipeRatingStats, getUserRating } from "@/services/ratingsService";
 
 interface RecipePageProps {
   params: { 
@@ -18,34 +15,95 @@ interface RecipePageProps {
 }
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
-  const { favoriteIds, toggleFavorite } = useFavorites()
-  const userRating = ratings.find((rating) => rating.userId === 1 && rating.recipeId === parseInt(params.id, 10))
-  const recipeRatings = ratings.filter((rating) => rating.recipeId === parseInt(params.id, 10))
-  const avgRating = Math.round((recipeRatings.reduce((acc, curr) => acc + curr.score, 0) / recipeRatings.length * 10)) / 10
-  const recipe = recipes.find(r => r.id === parseInt(params.id, 10));
+  const { favoriteIds, toggleFavorite } = useFavorites();
+  
+  // State management
+  const [recipe, setRecipe] = useState<any>(null);
+  const [ratingStats, setRatingStats] = useState({
+    averageRating: 0,
+    totalRatings: 0,
+    userRating: undefined as number | undefined
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const getAuthorNameById = (authorId: number) => {
-    const author = users.find(u => u.id === authorId);
-    const authorName = author ? author.username : "Unknown";
-    return authorName.charAt(0).toUpperCase() + authorName.slice(1);
-  }
+  // Load recipe data
+  const loadRecipeData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load recipe details
+      const recipeData = await getRecipe(params.id);
+      setRecipe(recipeData);
+      
+      // Load rating statistics
+      const ratingData = await getRecipeRatingStats(params.id);
+      setRatingStats({
+        averageRating: ratingData.averageRating,
+        totalRatings: ratingData.totalRatings,
+        userRating: ratingData.userRating
+      });
+      
+    } catch (err: any) {
+      console.error('Error loading recipe data:', err);
+      setError(err.message || 'Failed to load recipe details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const getNumberOfRecipesByAuthor = (authorId: number) => {
-    if (!authorId) return 0;
-    return recipes.filter(r => r.authorId === authorId).length;
-  }
+  // Load data on component mount
+  useEffect(() => {
+    loadRecipeData();
+  }, [params.id]);
 
+  // Helper functions
   const formatCategory = (category: string) => {
     if (category.includes("Dish")) 
       return category.replace("Dish", " Dish");
     return category;
+  };
+
+  if (loading) {
+    return (
+      <main className="px-4">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+            <p className="mt-4 text-gray-600">Loading recipe...</p>
+          </div>
+        </div>
+      </main>
+    );
   }
 
-  const formatRecipeCount = (count: number) => {
-    return count === 1 ? "1 Recipe" : `${count} Recipes`;
+  if (error || !recipe) {
+    return (
+      <main className="px-4">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error || 'Recipe not found'}</p>
+            <button 
+              onClick={loadRecipeData}
+              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </main>
+    );
   }
 
-  const recipeFields = ["Category", "Servings", "Prep Time", "Cook Time", "Difficulty", getAuthorNameById(recipe?.authorId || 0)]; 
+  const recipeFields = [
+    "Category", 
+    "Servings", 
+    "Prep Time", 
+    "Cook Time", 
+    "Difficulty", 
+    recipe?.author?.username || "Unknown Chef"
+  ]; 
 
   const icons = [
     <Soup size={16} color="#ffa319" />, 
@@ -60,9 +118,9 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
     formatCategory(recipe?.category || ""), 
     recipe?.servings === 1 ? "1 Person" : recipe?.servings + " People", 
     recipe?.prepTime + " Minutes", 
-    recipe?.cookTime + " Minutes", 
+    recipe?.cookingTime + " Minutes", 
     recipe?.difficulty,
-    formatRecipeCount(getNumberOfRecipesByAuthor(recipe?.authorId || 0))
+    "0 Recipes" // TODO: Add recipe count to author data from backend
   ];
 
   return (
@@ -91,8 +149,8 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
           `}
         >
           <Favorite
-            isFavorited={favoriteIds.includes(parseInt(params.id))}
-            recipeId={parseInt(params.id)}
+            isFavorited={favoriteIds.includes(params.id)}
+            recipeId={params.id}
             toggleFavorite={toggleFavorite}
           />
         </div>
@@ -100,8 +158,8 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
 
       <div className="flex flex-col justify-center items-center gap-4 mb-6">
         <RecipeAvgRating
-          avgRating={avgRating || 0}
-          ratingCount={recipeRatings.length || 0}
+          avgRating={ratingStats.averageRating || 0}
+          ratingCount={ratingStats.totalRatings || 0}
         />
       </div>
 
@@ -145,7 +203,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </h2>
             <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
               <ul className="mt-4 space-y-4">
-                {recipe?.ingredients.map((ingredient, index) => (
+                {recipe?.ingredients.map((ingredient: any, index: number) => (
                   <li
                     key={index}
                     className="flex justify-between items-center gap-4"
@@ -166,7 +224,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </h2>
             <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
               <ol className="mt-4 space-y-4">
-                {recipe?.steps.map((step, index) => (
+                {recipe?.steps.map((step: any, index: number) => (
                   <li key={index} className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-icon p-2 text-text-primary font-bold">
@@ -181,9 +239,6 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </div>
           </div>
         </div>
-
-        {/* Rating Form */}
-        <RatingForm recipeTitle={recipe?.title || ""} recipeRating={userRating}/>
       </div>
     </main>
   )

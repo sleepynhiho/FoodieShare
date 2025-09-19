@@ -8,7 +8,7 @@ export class RatingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async rateRecipe(recipeId: string, userId: string, createRatingDto: CreateRatingDto): Promise<RatingResponseDto> {
-    // First, check if recipe exists
+    // Check if recipe exists
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipeId },
       select: { id: true, userId: true }
