@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AuthController } from "./auth.controller";
+import { AuthGuard } from "./auth.guard";
 import { LoginService } from "./login/login.service";
 import { LogoutService } from "./logout/logout.service";
 import { SignupService } from "./signup/signup.service";
@@ -11,6 +12,7 @@ import { PrismaModule } from "src/common/prisma/prisma.module";
 @Module({
   imports: [SupabaseModule, EmailModule, PrismaModule],
   controllers: [AuthController],
-  providers: [LoginService, LogoutService, SignupService, EmailService]
+  providers: [AuthGuard, LoginService, LogoutService, SignupService, EmailService],
+  exports: [AuthGuard]
 })
 export class AuthModule {}
