@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { recipes } from "@/mocks/recipes";
-import { users } from "@/mocks/users";
-import { ratings } from "@/mocks/ratings";
+import { getRandomRecipe } from "@/services/recipeService";
 import { Recipe } from "@/types";
 import { Card } from "@/components/ui/card";
 import {
@@ -27,6 +25,18 @@ import {
 
 import "@/styles/randomRecipe.css";
 
+// Extended Recipe type for API response
+interface ApiRecipe extends Omit<Recipe, 'cookTime'> {
+  cookingTime: number; // API uses cookingTime instead of cookTime
+  author?: {
+    id: string;
+    email: string;
+    username: string;
+    avatar?: string;
+  };
+  avgRating?: number;
+}
+
 // Star Icon component matching your other card
 export const StarIcon = ({ className = "w-4 h-4" }) => (
   <svg
@@ -41,7 +51,7 @@ export const StarIcon = ({ className = "w-4 h-4" }) => (
 
 const RandomRecipeBox = () => {
   const [isOpening, setIsOpening] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<ApiRecipe | null>(null);
   const [showRecipe, setShowRecipe] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -60,7 +70,7 @@ const RandomRecipeBox = () => {
     return () => clearTimeout(timer);
   }, [selectedRecipe]);
 
-  const handleBoxClick = () => {
+  const handleBoxClick = async () => {
     if (isOpening) return;
 
     setIsOpening(true);
@@ -85,41 +95,42 @@ const RandomRecipeBox = () => {
       setChestStage(2); // Fully open
     }, 800);
 
-    // Select random recipe and finish animation
-    setTimeout(() => {
-      // Random recipe selection
-      const randomIndex = Math.floor(Math.random() * recipes.length);
-      const randomRecipe = recipes[randomIndex];
-
-      setSelectedRecipe(randomRecipe);
-      setIsOpening(false);
-
-      // Show recipe with animation
-      setTimeout(() => {
-        setShowRecipe(true);
-
-        // Reset chest after recipe shows
+    // Fetch random recipe from API and finish animation
+    setTimeout(async () => {
+      try {
+        const randomRecipe = await getRandomRecipe();
+        setSelectedRecipe(randomRecipe);
+        
+        // Show recipe with animation
         setTimeout(() => {
-          setChestStage(0);
-          setShowChestRays(false);
-        }, 300);
-      }, 200);
+          setShowRecipe(true);
+
+          // Reset chest after recipe shows
+          setTimeout(() => {
+            setChestStage(0);
+            setShowChestRays(false);
+          }, 300);
+        }, 200);
+      } catch (error) {
+        console.error('Error fetching random recipe:', error);
+        // Handle error - maybe show a fallback or error message
+      } finally {
+        setIsOpening(false);
+      }
     }, 1200);
   };
 
-  // Get recipe author and rating data (matching your other card)
-  const getRecipeData = (recipe: Recipe) => {
-    const author = users.find((u) => u.id === recipe.authorId);
-    const recipeRatings = ratings.filter((r) => r.recipeId === recipe.id);
-    const averageRating =
-      recipeRatings.length > 0
-        ? (
-            recipeRatings.reduce((sum, r) => sum + r.score, 0) /
-            recipeRatings.length
-          ).toFixed(1)
-        : "-";
+  // Get recipe author and rating data from API response
+  const getRecipeData = (recipe: ApiRecipe) => {
+    // The API response should already include author and avgRating
+    const author = recipe.author;
+    const averageRating = recipe.avgRating ? recipe.avgRating.toFixed(1) : "-";
+    
+    // For now, we don't have total ratings count in the API response
+    // You may want to add this to the backend later
+    const totalRatings = 0;
 
-    return { author, averageRating, totalRatings: recipeRatings.length };
+    return { author, averageRating, totalRatings };
   };
 
   // Format category similar to recipe detail page
@@ -406,7 +417,7 @@ const RandomRecipeBox = () => {
                   <div className="flex items-center space-x-1">
                     <Clock size={12} className="text-blue-500" />
                     <span className="text-xs font-medium text-gray-700">
-                      {selectedRecipe.prepTime + selectedRecipe.cookTime}m
+                      {selectedRecipe.prepTime + selectedRecipe.cookingTime}m
                     </span>
                   </div>
                 </div>

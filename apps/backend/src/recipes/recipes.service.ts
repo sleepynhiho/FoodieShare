@@ -351,4 +351,44 @@ export class RecipesService {
       updatedAt: recipe.updatedAt.toISOString(),
     };
   }
+
+  async findRandom(): Promise<RecipeResponseDto> {
+    // Use raw SQL for true randomness with PostgreSQL RANDOM() function
+    const result = await this.prisma.$queryRaw`
+      SELECT id FROM "Recipe" 
+      ORDER BY RANDOM() 
+      LIMIT 1
+    ` as { id: string }[];
+    
+    if (!result || result.length === 0) {
+      throw new NotFoundException('No recipes found');
+    }
+
+    const randomId = result[0].id;
+    
+    // Fetch the full recipe data
+    const randomRecipe = await this.prisma.recipe.findUnique({
+      where: { id: randomId },
+      include: {
+        ingredients: true,
+        steps: {
+          orderBy: { order: 'asc' }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    if (!randomRecipe) {
+      throw new NotFoundException('Recipe not found');
+    }
+
+    return this.formatRecipeResponse(randomRecipe);
+  }
 }

@@ -35,6 +35,11 @@ export class RecipesController {
     return this.recipesService.findAll(query);
   }
 
+  @Get('random')
+  async findRandom(): Promise<RecipeResponseDto> {
+    return this.recipesService.findRandom();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<RecipeResponseDto> {
     return this.recipesService.findOne(id);
