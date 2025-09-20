@@ -71,11 +71,7 @@ export const login = async (email: string, password: string) => {
 export const logout = async () => {
   try {
     const response = await axiosClient.post(
-      "/auth/logout",
-      {},
-      {
-        withCredentials: true,
-      }
+      "/auth/logout"
     );
 
     if (!response.data) {
