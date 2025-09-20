@@ -1,69 +1,76 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { Soup, User, Clock, ChefHat, Star, HandPlatter } from "lucide-react";
-import Favorite from "@/components/ui/favorite";
-import RecipeAvgRating from "@/components/ui/avg-rating";
-import { useFavorites } from "@/context/FavoritesContext";
-import { getRecipe } from "@/services/recipeService";
-import { getRecipeRatingStats, getUserRating } from "@/services/ratingsService";
+import { useState, useEffect } from "react"
+import { Soup, User, Clock, ChefHat, Star, HandPlatter } from "lucide-react"
+import Favorite from "@/components/ui/favorite"
+import RecipeAvgRating from "@/components/ui/avg-rating"
+import { recipes } from "@/mocks/recipes"
+import { favorites } from "@/mocks/favorites"
+import { ratings } from "@/mocks/ratings"
+import { users } from "@/mocks/users"
+import { useFavorites } from "@/context/FavoritesContext"
+import { RatingForm } from "@/components/RatingForm"
+import { getRecipe } from "@/services/recipeService"
+import { getRecipeRatingStats, getUserRating } from "@/services/ratingsService"
 
 interface RecipePageProps {
-  params: { 
+  params: {
     id: string
-  };
+  }
 }
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
-  const { favoriteIds, toggleFavorite } = useFavorites();
-  
+  const { favoriteIds, toggleFavorite } = useFavorites()
+  const userRating = ratings.find(
+    (rating) =>
+      rating.userId === 1 && rating.recipeId === parseInt(params.id, 10)
+  )
+
   // State management
-  const [recipe, setRecipe] = useState<any>(null);
+  const [recipe, setRecipe] = useState<any>(null)
   const [ratingStats, setRatingStats] = useState({
     averageRating: 0,
     totalRatings: 0,
     userRating: undefined as number | undefined
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Load recipe data
   const loadRecipeData = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
+      setLoading(true)
+      setError(null)
+
       // Load recipe details
-      const recipeData = await getRecipe(params.id);
-      setRecipe(recipeData);
-      
+      const recipeData = await getRecipe(params.id)
+      setRecipe(recipeData)
+
       // Load rating statistics
-      const ratingData = await getRecipeRatingStats(params.id);
+      const ratingData = await getRecipeRatingStats(params.id)
       setRatingStats({
         averageRating: ratingData.averageRating,
         totalRatings: ratingData.totalRatings,
         userRating: ratingData.userRating
-      });
-      
+      })
     } catch (err: any) {
-      console.error('Error loading recipe data:', err);
-      setError(err.message || 'Failed to load recipe details');
+      console.error("Error loading recipe data:", err)
+      setError(err.message || "Failed to load recipe details")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Load data on component mount
   useEffect(() => {
-    loadRecipeData();
-  }, [params.id]);
+    loadRecipeData()
+  }, [params.id])
 
   // Helper functions
   const formatCategory = (category: string) => {
-    if (category.includes("Dish")) 
-      return category.replace("Dish", " Dish");
-    return category;
-  };
+    if (category.includes("Dish")) return category.replace("Dish", " Dish")
+    return category
+  }
 
   if (loading) {
     return (
@@ -75,7 +82,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
           </div>
         </div>
       </main>
-    );
+    )
   }
 
   if (error || !recipe) {
@@ -83,8 +90,8 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
       <main className="px-4">
         <div className="flex justify-center items-center min-h-screen">
           <div className="text-center">
-            <p className="text-red-600 mb-4">{error || 'Recipe not found'}</p>
-            <button 
+            <p className="text-red-600 mb-4">{error || "Recipe not found"}</p>
+            <button
               onClick={loadRecipeData}
               className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
             >
@@ -93,35 +100,35 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
           </div>
         </div>
       </main>
-    );
+    )
   }
 
   const recipeFields = [
-    "Category", 
-    "Servings", 
-    "Prep Time", 
-    "Cook Time", 
-    "Difficulty", 
+    "Category",
+    "Servings",
+    "Prep Time",
+    "Cook Time",
+    "Difficulty",
     recipe?.author?.username || "Unknown Chef"
-  ]; 
+  ]
 
   const icons = [
-    <Soup size={16} color="#ffa319" />, 
+    <Soup size={16} color="#ffa319" />,
     <HandPlatter size={16} color="#ffa319" />,
-    <Clock size={16} color="#ffa319" />, 
-    <ChefHat size={16} color="#ffa319" />, 
+    <Clock size={16} color="#ffa319" />,
+    <ChefHat size={16} color="#ffa319" />,
     <Star size={16} color="#ffa319" />,
     <User size={16} color="#ffa319" />
-  ];
+  ]
 
   const recipeValues = [
-    formatCategory(recipe?.category || ""), 
-    recipe?.servings === 1 ? "1 Person" : recipe?.servings + " People", 
-    recipe?.prepTime + " Minutes", 
-    recipe?.cookingTime + " Minutes", 
+    formatCategory(recipe?.category || ""),
+    recipe?.servings === 1 ? "1 Person" : recipe?.servings + " People",
+    recipe?.prepTime + " Minutes",
+    recipe?.cookingTime + " Minutes",
     recipe?.difficulty,
     "0 Recipes" // TODO: Add recipe count to author data from backend
-  ];
+  ]
 
   return (
     <main className="px-4">
@@ -138,8 +145,12 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             className="absolute mb-8 sm:mb-12 px-4 xs:px-8 inset-y-0 flex flex-col flex-wrap justify-end gap-1"
             style={{ textShadow: "2px 2px 6px rgba(36, 36, 36, 0.7)" }}
           >
-            <p className="text-sm sm:text-lg text-white font-semibold">Let's Cook</p>
-            <h1 className="text-white text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold">{recipe?.title}</h1>
+            <p className="text-sm sm:text-lg text-white font-semibold">
+              Let's Cook
+            </p>
+            <h1 className="text-white text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold">
+              {recipe?.title}
+            </h1>
           </div>
         </div>
         <div
@@ -193,7 +204,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         <h2 className="text-2xl font-bold">Description</h2>
         <p className="mt-2 text-text-muted">{recipe?.description}</p>
       </div>
-      
+
       <div className="flex flex-col">
         <div className="flex flex-col md:flex-row md:justify-between md:gap-4">
           {/* Ingredients */}
@@ -203,7 +214,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </h2>
             <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
               <ul className="mt-4 space-y-4">
-                {recipe?.ingredients.map((ingredient: any, index: number) => (
+                {recipe?.ingredients.map((ingredient, index) => (
                   <li
                     key={index}
                     className="flex justify-between items-center gap-4"
@@ -224,7 +235,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </h2>
             <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
               <ol className="mt-4 space-y-4">
-                {recipe?.steps.map((step: any, index: number) => (
+                {recipe?.steps.map((step, index) => (
                   <li key={index} className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-icon p-2 text-text-primary font-bold">
@@ -239,6 +250,12 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </div>
           </div>
         </div>
+
+        {/* Rating Form */}
+        <RatingForm
+          recipeTitle={recipe?.title || ""}
+          recipeRating={userRating}
+        />
       </div>
     </main>
   )
