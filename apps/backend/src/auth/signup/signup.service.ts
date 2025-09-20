@@ -1,7 +1,8 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { SupabaseService } from "src/common/supabase/supabase.service";
 import { PrismaService } from "src/common/prisma/prisma.service";
 import { CreateUserDto } from "../dto/signup.dto";
+import { UserExistException } from "src/common/exceptions/user-exist.exception";
 
 @Injectable()
 export class SignupService {
@@ -20,9 +21,8 @@ export class SignupService {
       }
     })
 
-    if (existingUser) {
-      throw new BadRequestException("Email already exists");
-    }
+    if (existingUser)
+      throw new UserExistException("Email already exists!");
 
     // Check if username exists
     const existingUsername = await this.prisma.user.findFirst({
@@ -31,9 +31,8 @@ export class SignupService {
       }
     })
 
-    if (existingUsername) {
-      throw new BadRequestException("Username already exists");
-    }
+    if (existingUsername)
+      throw new UserExistException("Username already exists!");
 
     const { data, error } = await supabase.auth.signUp({
       email: dto.email,
@@ -43,25 +42,15 @@ export class SignupService {
       }
     });
 
-    if (error) {
-      throw new BadRequestException(`Signup failed: ${error.message}`);
-    }
-
     // Only create user in database if Supabase signup was successful and returned a user
     if (data?.user) {
-      try {
-        await this.prisma.user.create({
-          data: {
-            id: data.user.id, // Use Supabase user ID
-            email: dto.email,
-            username: dto.username,
-          }
-        })
-      } catch (dbError) {
-        // If database creation fails, we should clean up the Supabase user
-        // But for now, just throw an error
-        throw new BadRequestException("Failed to create user profile");
-      }
+      await this.prisma.user.create({
+        data: {
+          id: data.user.id, // Use Supabase user ID
+          email: dto.email,
+          username: dto.username,
+        }
+      })
     }
 
     return data;

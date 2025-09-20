@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { EmailDto } from "./dto/email.dto";
 import { SupabaseService } from "src/common/supabase/supabase.service";
+import { ServerException } from "src/common/exceptions/server-exception";
 
 @Injectable()
 export class EmailService {
@@ -17,7 +18,8 @@ export class EmailService {
       }
     })
 
-    if (error) return null
+    if (error) 
+      throw new ServerException("Failed to resend email!")
 
     return data
   }
