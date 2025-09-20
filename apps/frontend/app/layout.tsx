@@ -1,6 +1,5 @@
 import { Toaster } from "sonner";
 import "../styles/globals.css";
-import { Toaster } from "sonner";
 
 export const metadata = {
   title: "FoodieShare",
