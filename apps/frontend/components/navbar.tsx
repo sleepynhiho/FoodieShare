@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserProfileButton } from "@/components/auth/UserProfileButton";
-import { isAuthenticated } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
 import { SearchButton } from "./SearchButton";
 import { RECIPE_CATEGORIES, CATEGORY_DISPLAY_NAMES } from "@/lib/constants";
 import {
@@ -55,15 +55,10 @@ const NavLink = ({
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const authenticated = await isAuthenticated();
-      setIsLoggedIn(authenticated);
-    };
-    checkAuth();
-  }, [pathname]);
+  // isAuthenticated is now directly from context
+  const isLoggedIn = isAuthenticated;
 
   const toggleSidebar = () => setOpen(!open);
 
