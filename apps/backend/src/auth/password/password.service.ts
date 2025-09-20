@@ -32,7 +32,10 @@ export class PasswordService {
     if (error) 
       throw new ServerException("Failed to send email to reset password!")
 
-    return { message: "Email to reset password has been sent successfully!" }
+    return { 
+      userId: existingUser.id,
+      message: "Email to reset password has been sent successfully!" 
+    }
   }
 
   async resetPassword(dto: PasswordResetDto) {
