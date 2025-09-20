@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { SupabaseService } from "src/common/supabase/supabase.service";
 import { PasswordResetDto, PasswordResetEmailDto } from "../dto/password.dto";
 import { ServerException } from "src/common/exceptions/server-exception";
@@ -32,19 +32,20 @@ export class PasswordService {
     if (error) 
       throw new ServerException("Failed to send email to reset password!")
 
-    return { message: "Sent reset password email successfully!" }
+    return { message: "Email to reset password has been sent successfully!" }
   }
 
   async resetPassword(dto: PasswordResetDto) {
-    const supabase = this.supabaseService.getClient();
-    
-    const { data, error } = await supabase.auth.updateUser({
-      password: dto["password"]
+    const supabase = this.supabaseService.getClient()
+    const { password, userId } = dto;
+
+    const { data, error } = await supabase.auth.admin.updateUserById(userId, {
+      password: password
     });
 
-    if (error) 
-      throw new UnauthorizedException("Invalid or expired token!");
+    if (error)
+      throw new ServerException("Cannot update password!")
 
-    return data
+    return { message: "Password has been updated successfully!" }
   }
 }

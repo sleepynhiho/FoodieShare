@@ -50,13 +50,6 @@ export class AuthController {
     }
 
     if (res.data?.session) {
-      response.cookie("accessToken", res.data.session.access_token, {
-        httpOnly: true,   
-        secure: false,     
-        sameSite: "lax", 
-        maxAge: 60 * 60 * 1000 // 1 hour
-      });
-
       response.cookie("refreshToken", res.data.session.refresh_token, {
         httpOnly: true,   
         secure: false,     
@@ -74,17 +67,10 @@ export class AuthController {
     const refreshToken = request.cookies["refreshToken"];
 
     if (!refreshToken)
-      throw new UnauthorizedException("Invalid or expired refresh token!")
+      throw new UnauthorizedException("No token provided!")
     
     const res = await this.refreshService.refresh(refreshToken)
     if (res) {
-      response.cookie("accessToken", res.accessToken, {
-        httpOnly: true,   
-        secure: false,     
-        sameSite: "lax", 
-        maxAge: 60 * 60 * 1000 // 1 hour
-      });
-
       response.cookie("refreshToken", res.refreshToken, {
         httpOnly: true,   
         secure: false,     
@@ -93,7 +79,8 @@ export class AuthController {
       });
 
       return {
-        "message": "Refresh token successfully!"
+        "accessToken": res.accessToken,
+        "message": "Refreshed token successfully!"
       }
     }
   }
@@ -101,14 +88,14 @@ export class AuthController {
   @Post("logout")
   @HttpCode(200)
   async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    const accessToken = request.cookies["accessToken"];
+    const authHeader = request.headers["authorization"];
 
-    if (!accessToken)
-      throw new UnauthorizedException("Invalid or expired access token!")
+    if (!authHeader)
+      throw new UnauthorizedException("No token provided!")
 
+    const accessToken = authHeader.replace("Bearer", "")
     const res = await this.logoutService.logout(accessToken)
     if (res) {
-      response.clearCookie("accessToken"); 
       response.clearCookie("refreshToken"); 
       return res;
     }
