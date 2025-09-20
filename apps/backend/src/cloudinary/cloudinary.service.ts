@@ -45,4 +45,43 @@ export class CloudinaryService {
       folder,
     };
   }
+
+  async uploadFile(file: Express.Multer.File, folder: string = 'avatars'): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const uploadOptions = {
+        folder,
+        transformation: [
+          { width: 400, height: 400, crop: 'fill', gravity: 'face' },
+          { quality: 'auto:good' },
+          { format: 'webp' }
+        ],
+        public_id: `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      };
+
+      const uploadStream = cloudinary.uploader.upload_stream(
+        uploadOptions,
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result?.secure_url || '');
+          }
+        }
+      );
+
+      uploadStream.end(file.buffer);
+    });
+  }
+
+  async deleteFile(publicId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
 }
