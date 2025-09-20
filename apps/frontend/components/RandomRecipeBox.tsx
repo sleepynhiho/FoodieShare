@@ -20,7 +20,6 @@ import {
 import {
   GiTreasureMap,
   GiOpenTreasureChest,
-  GiLockedChest,
 } from "react-icons/gi";
 
 import "@/styles/randomRecipe.css";
