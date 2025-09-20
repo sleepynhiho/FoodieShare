@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { logout, getCurrentUser } from "@/services/authService";
+import Link from "next/link";
+import { logout, getCurrentUser, refreshUserData } from "@/services/authService";
 import { useEffect, useState } from "react";
 
 export function UserProfileButton() {
@@ -19,10 +21,29 @@ export function UserProfileButton() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await getCurrentUser();
-      setUser(userData);
+      // First get user from localStorage for immediate display
+      const cachedUser = getCurrentUser();
+      if (cachedUser) {
+        setUser(cachedUser);
+      }
+      
+      // Then refresh with latest data from API
+      const freshUserData = await refreshUserData();
+      setUser(freshUserData);
     };
+    
     fetchUser();
+
+    // Listen for profile updates
+    const handleProfileUpdate = (event: CustomEvent) => {
+      setUser(event.detail);
+    };
+
+    window.addEventListener('userProfileUpdated', handleProfileUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('userProfileUpdated', handleProfileUpdate as EventListener);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -38,18 +59,39 @@ export function UserProfileButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full bg-black text-white hover:bg-black/80"
-        >
-          <User className="w-4" />
-        </Button>
+        {user?.avatar ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full p-0 h-8 w-8 hover:ring-2 hover:ring-orange-500 hover:ring-offset-2 transition-all duration-200"
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarFallback className="bg-orange-500 text-white text-xs">
+                {user.username?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full bg-black text-white hover:bg-black/80"
+          >
+            <User className="w-4" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         {user && (
           <>
-            <div className="flex items-center justify-start gap-2 p-2">
+            <div className="flex items-center justify-start gap-3 p-3">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user.avatar} alt={user.username} />
+                <AvatarFallback className="bg-orange-500 text-white text-sm">
+                  {user.username?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.username}</p>
                 <p className="text-xs leading-none text-muted-foreground">
@@ -58,6 +100,12 @@ export function UserProfileButton() {
               </div>
             </div>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Profile Settings</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="text-red-600 cursor-pointer"
               onClick={handleLogout}
