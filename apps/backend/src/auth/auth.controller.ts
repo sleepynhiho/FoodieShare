@@ -9,7 +9,6 @@ import { ServerException } from "src/common/exceptions/server-exception";
 import { LoginDto } from "./dto/login.dto";
 import { LoginService } from "./login/login.service";
 import { LogoutService } from "./logout/logout.service";
-import { UserNotFoundException } from "src/common/exceptions/user-not-found.exception";
 import { AuthGuard } from "./auth.guard";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
@@ -28,7 +27,7 @@ export class AuthController {
     private readonly loginService: LoginService,
     private readonly logoutService: LogoutService,
     private readonly profileService: ProfileService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
     private readonly refreshService: RefreshService,
     private readonly passwordService: PasswordService
   ) {}
