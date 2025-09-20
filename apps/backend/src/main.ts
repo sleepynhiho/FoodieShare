@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { VersioningType, ValidationPipe } from "@nestjs/common";
@@ -26,6 +27,8 @@ async function bootstrap() {
     origin: true, 
     credentials: true               
   });
+
+  app.use(cookieParser());
 
   await app.listen(process.env.PORT ?? 3000);
 }
