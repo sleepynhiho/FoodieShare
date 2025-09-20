@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import Link from "next/link";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 import { login } from "@/services/authService";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -49,17 +51,17 @@ export default function SignInPage() {
     try {
       setLoading(true);
       // Call login API
-      let response = await login(email, password);
-      if (!response) {
-        throw new Error("Login failed");
-      }
+      await login(email, password);
+      
+      // Clear form on success
       setEmail("");
       setPassword("");
       setTouched({ email: false, password: false });
       
-      router.push("/"); // Redirect to homepage      
+      router.push("/"); // Redirect to homepage
+      toast.success("Logged in successfully!");
     } catch (err: any) {
-      console.error("Login error:", err);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,6 @@ export default function SignInPage() {
                 className={clsx(
                   emailError && "border-red-500 focus-visible:ring-red-500"
                 )}
-                required
                 placeholder="you@example.com"
               />
               {emailError && <ErrorMessage errorMessage={emailError} />}
@@ -102,18 +103,14 @@ export default function SignInPage() {
             {/* PASSWORD */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onBlur={() => markTouched("password")}
                 aria-invalid={!!passwordError}
                 aria-describedby="password-error"
-                className={clsx(
-                  passwordError && "border-red-500 focus-visible:ring-red-500"
-                )}
-                required
+                error={!!passwordError}
                 placeholder="Your password"
               />
               {passwordError && <ErrorMessage errorMessage={passwordError} />}

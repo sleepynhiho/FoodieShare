@@ -5,13 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import { CheckCircle, Circle } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 import { signUp } from "@/services/authService";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -81,11 +85,10 @@ export default function SignUpPage() {
       setName("");
       setTouched({ name: false, email: false, password: false });
 
-      alert(
-        "Account created successfully. Please check your email to confirm."
-      );
+      toast.success('Account created successfully. Please check your email to confirm.')
+      setTimeout(() => router.push("/login"), 4000); // Redirect to login page
     } catch (err: any) {
-      console.error("Signup error:", err);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -115,7 +118,6 @@ export default function SignUpPage() {
               className={clsx(
                 nameError && "border-red-500 focus-visible:ring-red-500"
               )}
-              required
               placeholder="Emily Rose"
             />
             {nameError && <ErrorMessage errorMessage={nameError} />}
@@ -135,7 +137,6 @@ export default function SignUpPage() {
               className={clsx(
                 emailError && "border-red-500 focus-visible:ring-red-500"
               )}
-              required
               placeholder="you@example.com"
             />
             {emailError && <ErrorMessage errorMessage={emailError} />}
@@ -144,9 +145,8 @@ export default function SignUpPage() {
           {/* PASSWORD */}
           <div className="relative space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onBlur={() => {
@@ -154,10 +154,7 @@ export default function SignUpPage() {
               }}
               aria-invalid={!!passwordError}
               aria-describedby="password-error"
-              className={clsx(
-                passwordError && "border-red-500 focus-visible:ring-red-500"
-              )}
-              required
+              error={!!passwordError}
               placeholder="Your password"
             />
 

@@ -1,26 +1,71 @@
 import axiosClient from "./axiosClient";
 
 export const signUp = async (name: string, email: string, password: string) => {
-  const response = await axiosClient.post("/auth/signup", {
-    email,
-    password,
-    username: name,
-  });
-
-  return response;
+  try {
+    const response = await axiosClient.post("/auth/signup", {
+      email,
+      password,
+      username: name,
+    });
+    if (!response.data?.user) {
+      throw new Error("Invalid response from server. Please try again.");
+    }
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (err: any) {
+    console.error('Error signing up:', err);
+    // Handle different error types
+    if (err.response) {
+      // Server responded with error status
+      const message =
+        err.response.data?.message || "Failed to sign up. Please try again.";
+      throw new Error(message);
+    } else if (err.request) {
+      // Request was made but no response received
+      throw new Error("Network error: Unable to reach server");
+    } else {
+      // Something else happened
+      throw new Error("An unexpected error occurred");
+    }
+  }
 };
 
 export const login = async (email: string, password: string) => {
-  const response = await axiosClient.post("/auth/login", {
-    email,
-    password,
-  });
+  try {
+    const response = await axiosClient.post("/auth/login", {
+      email,
+      password,
+    });
 
-  // Store the token and user data
-  localStorage.setItem("token", response.data.session.access_token);
-  localStorage.setItem("user", JSON.stringify(response.data.user));
+    if (!response.data?.session?.access_token) {
+      throw new Error("Invalid response from server. Please try again.");
+    }
 
-  return response.data;
+    // Store the token and user data
+    localStorage.setItem("token", response.data.session.access_token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (err: any) {
+    console.error('Error logging in:', err);
+    // Handle different error types
+    if (err.response) {
+      // Server responded with error status
+      const message = err.response.data?.message || "Failed to login.";
+      throw new Error(message);
+    } else if (err.request) {
+      // Request was made but no response received
+      throw new Error("Network error: Unable to reach server");
+    } else {
+      // Something else happened
+      throw new Error("An unexpected error occurred");
+    }
+  }
 };
 
 export const logout = async () => {

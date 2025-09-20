@@ -10,11 +10,13 @@ import { EmailModule } from "src/email/email.module";
 import { EmailService } from "src/email/email.service";
 import { PrismaModule } from "src/common/prisma/prisma.module";
 import { CloudinaryModule } from "../cloudinary/cloudinary.module";
+import { RefreshService } from './refresh/refresh.service';
+import { PasswordService } from './password/password.service';
 
 @Module({
   imports: [SupabaseModule, EmailModule, PrismaModule, CloudinaryModule],
   controllers: [AuthController],
-  providers: [AuthGuard, LoginService, LogoutService, SignupService, ProfileService, EmailService],
+  providers: [AuthGuard, LoginService, LogoutService, SignupService, EmailService, RefreshService, PasswordService, ProfileService],
   exports: [AuthGuard]
 })
 export class AuthModule {}

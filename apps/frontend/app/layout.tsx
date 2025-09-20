@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import "../styles/globals.css";
 import { Toaster } from "sonner";
 
@@ -13,9 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.png" />
+      </head>
       <body>
         {children}
-        <Toaster position="top-right" />
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
