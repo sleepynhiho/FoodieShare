@@ -12,39 +12,28 @@ import {
 import { User, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { logout, getCurrentUser, refreshUserData } from "@/services/authService";
-import { useEffect, useState } from "react";
+import { refreshUserData } from "@/services/authService";
+import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 export function UserProfileButton() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const { user, setUser } = useAuth();
+  const { logout } = useAuthActions();
 
   useEffect(() => {
     const fetchUser = async () => {
-      // First get user from localStorage for immediate display
-      const cachedUser = getCurrentUser();
-      if (cachedUser) {
-        setUser(cachedUser);
+      try {
+        const data = await refreshUserData();
+        setUser(data);
+      } catch (err) {
+        console.error("Failed to refresh user data:", err);
       }
-      
-      // Then refresh with latest data from API
-      const freshUserData = await refreshUserData();
-      setUser(freshUserData);
     };
-    
+
     fetchUser();
-
-    // Listen for profile updates
-    const handleProfileUpdate = (event: CustomEvent) => {
-      setUser(event.detail);
-    };
-
-    window.addEventListener('userProfileUpdated', handleProfileUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('userProfileUpdated', handleProfileUpdate as EventListener);
-    };
-  }, []);
+  }, [setUser]);
 
   const handleLogout = async () => {
     try {
@@ -93,7 +82,9 @@ export function UserProfileButton() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.username}</p>
+                <p className="text-sm font-medium leading-none">
+                  {user.username}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user.email}
                 </p>

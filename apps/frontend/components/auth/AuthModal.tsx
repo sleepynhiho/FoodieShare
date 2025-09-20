@@ -25,10 +25,10 @@ export function AuthModal({ isOpen, onClose}: AuthModalProps) {
         </DialogHeader>
         <div className="flex flex-col gap-4 mt-4">
           <Link href="/login">
-            <Button className="w-full">Sign In</Button>
+            <Button className="w-full" onClick={onClose}>Sign In</Button>
           </Link>
           <Link href="/sign-up">
-            <Button variant="outline" className="w-full">Create Account</Button>
+            <Button variant="outline" className="w-full" onClick={onClose}>Create Account</Button>
           </Link>
         </div>
       </DialogContent>

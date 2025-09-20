@@ -1,14 +1,31 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { AuthModal } from '@/components/auth/AuthModal';
-import { isAuthenticated as checkAuth } from '@/services/authService';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useEffect,
+} from "react";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { registerTokenGetter } from "@/lib/tokenRegistry";
+
+interface User {
+  id: string;
+  email: string;
+  [key: string]: any;
+}
 
 interface AuthContextType {
   showAuthModal: (actionType?: string) => void;
   hideAuthModal: () => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  token: string | null;
+  setToken: (token: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,20 +33,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  // Check authentication status on mount and when localStorage changes
   useEffect(() => {
-    setIsAuthenticated(checkAuth());
-
-    const handleStorageChange = () => {
-      setIsAuthenticated(checkAuth());
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+    registerTokenGetter(() => token);
+  }, [token]);
 
   const showAuthModal = useCallback(() => {
     setIsModalOpen(true);
@@ -46,13 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hideAuthModal,
         isAuthenticated,
         setIsAuthenticated,
+        user,
+        setUser,
+        token,
+        setToken,
       }}
     >
       {children}
-      <AuthModal
-        isOpen={isModalOpen}
-        onClose={hideAuthModal}
-      />
+      <AuthModal isOpen={isModalOpen} onClose={hideAuthModal} />
     </AuthContext.Provider>
   );
 }
@@ -60,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
