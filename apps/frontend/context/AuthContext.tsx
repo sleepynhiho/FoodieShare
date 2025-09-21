@@ -26,7 +26,7 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
   token: string | null;
   setToken: (token: string | null) => void;
-  isAuthLoading: boolean; // Thêm thuộc tính isAuthLoading
+  isAuthLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,42 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
 
   useEffect(() => {
     registerTokenGetter(() => token);
   }, [token]);
-
-  // Lưu user vào localStorage khi user thay đổi
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
-    }
-  }, [user]);
-
-  // Lưu token vào localStorage khi token thay đổi
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-    } else {
-      localStorage.removeItem("token");
-    }
-  }, [token]);
-
-  // Khi app khởi động, lấy lại user/token từ localStorage nếu có
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-    console.log("Restoring from localStorage:", { storedUser, storedToken });
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-      setIsAuthenticated(true);
-    }
-    setIsAuthLoading(false);
-  }, []);
 
   const showAuthModal = useCallback(() => {
     setIsModalOpen(true);
@@ -92,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser,
         token,
         setToken,
-        isAuthLoading, // Thêm vào context
+        isAuthLoading,
       }}
     >
       {children}
