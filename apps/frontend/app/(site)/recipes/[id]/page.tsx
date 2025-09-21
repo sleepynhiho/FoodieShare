@@ -11,6 +11,7 @@ import { getRecipeRatingStats } from "@/services/ratingsService"
 import { toast } from "sonner"
 import { submitRating } from "@/services/ratingsService";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { useAuth } from "@/context/AuthContext";
 
 interface RecipePageProps {
   params: {
@@ -36,6 +37,8 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const { user } = useAuth();
+
   useEffect(() => {
     setRating(ratingStats.userRating || 0)
   }, [ratingStats.userRating])
@@ -54,9 +57,14 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             duration: 2000
           })
         } catch (error) {
-          toast.error("Please login to rate the recipe!", {
-            duration: 2000
-          })
+          if (user?.id === recipe.author.id)
+            toast.error("You cannot rate your own recipe!", {
+              duration: 2000
+            })
+          else
+            toast.error("Please login to rate the recipe!", {
+              duration: 2000
+            })
         } finally {
           setTimeout(() => setCanClick(true), 2000)
         }
