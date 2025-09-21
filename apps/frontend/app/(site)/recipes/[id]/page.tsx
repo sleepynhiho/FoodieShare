@@ -4,14 +4,12 @@ import { useState, useEffect } from "react"
 import { Soup, User, Clock, ChefHat, Star, HandPlatter } from "lucide-react"
 import Favorite from "@/components/ui/favorite"
 import RecipeAvgRating from "@/components/ui/avg-rating"
-import { recipes } from "@/mocks/recipes"
-import { favorites } from "@/mocks/favorites"
-import { ratings } from "@/mocks/ratings"
-import { users } from "@/mocks/users"
 import { useFavorites } from "@/context/FavoritesContext"
 import { RatingForm } from "@/components/RatingForm"
 import { getRecipe } from "@/services/recipeService"
-import { getRecipeRatingStats, getUserRating } from "@/services/ratingsService"
+import { getRecipeRatingStats } from "@/services/ratingsService"
+import { toast } from "sonner"
+import { submitRating } from "@/services/ratingsService";
 
 interface RecipePageProps {
   params: {
@@ -21,10 +19,6 @@ interface RecipePageProps {
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
   const { favoriteIds, toggleFavorite } = useFavorites()
-  const userRating = ratings.find(
-    (rating) =>
-      rating.userId === 1 && rating.recipeId === parseInt(params.id, 10)
-  )
 
   // State management
   const [recipe, setRecipe] = useState<any>(null)
@@ -33,8 +27,35 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
     totalRatings: 0,
     userRating: undefined as number | undefined
   })
+  const [rating, setRating] = useState<number>(ratingStats.userRating || 0)
+  const [canClick, setCanClick] = useState(true) // To prevent multiple rating clicks
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setRating(ratingStats.userRating || 0)
+  }, [ratingStats.userRating])
+
+  const handleRatingChange = async (value: number) => {
+    if (!canClick) return
+    setCanClick(false)
+
+    setRating(value)
+
+    try {
+      await submitRating(params.id, value)
+      toast.success("Thanks for rating!", {
+        duration: 2000
+      })
+    } catch (error) {
+      toast.error("Please login to rate the recipe!", {
+        duration: 2000
+      })
+    } finally {
+      setTimeout(() => setCanClick(true), 2000)
+    }
+  };
 
   // Load recipe data
   const loadRecipeData = async () => {
@@ -254,7 +275,9 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         {/* Rating Form */}
         <RatingForm
           recipeTitle={recipe?.title || ""}
-          recipeRating={userRating}
+          userRating={rating}
+          canClick={canClick}
+          onRatingChange={handleRatingChange}
         />
       </div>
     </main>

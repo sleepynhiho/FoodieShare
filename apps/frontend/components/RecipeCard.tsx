@@ -104,7 +104,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                   <StarIcon />
                   <span className="text-sm">{averageRating}</span>
                   <span className="flex items-center text-xs text-gray-500 h-full">
-                    ({recipe.ratingCount || 0})
+                    ({recipe.totalRating || 0})
                   </span>
                 </span>
                 <div className="w-[30px]"></div>

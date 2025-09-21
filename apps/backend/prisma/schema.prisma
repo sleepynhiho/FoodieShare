@@ -37,6 +37,7 @@ model Recipe {
   servings    Int              @default(1)
   difficulty  String           // "Easy", "Medium", "Hard"
   avgRating   Float?           @default(0) // Average rating calculated from ratings
+  totalRating Int?             @default(0)
   ingredients RecipeIngredient[]
   steps       RecipeStep[]
   userId      String

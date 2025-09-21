@@ -34,6 +34,7 @@ interface ApiRecipe extends Omit<Recipe, 'cookTime'> {
     avatar?: string;
   };
   avgRating?: number;
+  totalRating?: number;
 }
 
 // Star Icon component matching your other card
@@ -127,7 +128,7 @@ const RandomRecipeBox = () => {
     
     // For now, we don't have total ratings count in the API response
     // You may want to add this to the backend later
-    const totalRatings = 0;
+    const totalRatings = recipe.totalRating ? recipe.totalRating : 0;
 
     return { author, averageRating, totalRatings };
   };
