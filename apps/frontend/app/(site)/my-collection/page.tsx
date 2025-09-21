@@ -1,9 +1,10 @@
 "use client";
 
-import { recipes } from "@/mocks/recipes";
+import { useEffect, useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
+import { getUserRecipes } from "@/services/userService";
 import Link from "next/link";
 
 export default function MyCollectionPage() {
@@ -45,14 +46,22 @@ export default function MyCollectionPage() {
 
   const userId = user?.id || user?.email || user?.name;
 
-  const { favoriteIds } = useFavorites();
+  const { favoriteRecipes } = useFavorites();
 
-  const myRecipes = recipes.filter(
-    (r) => String(r.authorId) === String(userId)
-  );
-  const favoriteRecipes = recipes.filter((r) =>
-    favoriteIds.includes(String(r.id))
-  );
+  const [myRecipes, setMyRecipes] = useState<any[]>([]);
+
+  const getMyRecipes = async () => {
+    try {
+      const data = await getUserRecipes();
+      setMyRecipes(data);
+    } catch (error) {
+      console.error("Failed to fetch user recipes:", error);
+    }
+  }
+
+  useEffect(() => {
+    getMyRecipes();
+  }, []);
 
   const isEmpty = myRecipes.length === 0 && favoriteRecipes.length === 0;
 
@@ -87,7 +96,7 @@ export default function MyCollectionPage() {
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
-                  isFavorited={favoriteIds.includes(String(recipe.id))}
+                  isFavorited={favoriteRecipes.find((r) => r.id === (String(recipe.id))) ? true : false}
                 />
               ))}
             </section>

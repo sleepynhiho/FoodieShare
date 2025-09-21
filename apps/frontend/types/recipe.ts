@@ -39,7 +39,7 @@ export type Category =
   | "Beverage";
 
 export interface Recipe {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   prepTime: number; // minutes

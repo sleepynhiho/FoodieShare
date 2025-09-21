@@ -1,23 +1,36 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/common/prisma/prisma.service";
+import { RecipeResponseDto } from "src/recipes/dto/recipe-response.dto";
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getUserRecipes(userId: string) {
-    return this.prisma.recipe.findMany({
+    const userRecipes = await this.prisma.recipe.findMany({
       where: {
         userId: userId,
       },
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      }
     });
+
+    return userRecipes
   }
 
   async getUserFavorites(userId: string) {
-    return this.prisma.recipe.findMany({
+    const favoriteRecipes = await this.prisma.recipe.findMany({
       where: {
         favorites: {
           some: {
@@ -28,6 +41,18 @@ export class UsersService {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      }
     });
+
+    return favoriteRecipes;
   }
 }

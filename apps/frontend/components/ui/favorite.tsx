@@ -4,14 +4,14 @@ import { useProtectedAction } from "@/hooks/useProtectedAction";
 
 interface FavoriteProps {
   isFavorited: boolean;
-  recipeId: string | number; // Accept both types
-  toggleFavorite: (recipeId: string | number, userId?: number) => void;
+  recipe: { id: string; [key: string]: any }; 
+  toggleFavorite: (recipe: { id: string }) => void;
   isSmall?: boolean;
 }
 
 export default function Favorite({
   isFavorited = false,
-  recipeId = "1",
+  recipe,
   toggleFavorite,
   isSmall = false
 }: FavoriteProps) {
@@ -27,7 +27,7 @@ export default function Favorite({
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           protectAction(
-            () => toggleFavorite(recipeId, 1)
+            () => toggleFavorite(recipe)
           );
         }}
       />

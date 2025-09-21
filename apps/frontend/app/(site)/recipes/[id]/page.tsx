@@ -19,7 +19,7 @@ interface RecipePageProps {
 }
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
-  const { favoriteIds, toggleFavorite } = useFavorites()
+  const { favoriteRecipes, toggleFavorite } = useFavorites()
 
   const { protectAction } = useProtectedAction();
 
@@ -188,8 +188,8 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
           `}
         >
           <Favorite
-            isFavorited={favoriteIds.includes(params.id)}
-            recipeId={params.id}
+            isFavorited={favoriteRecipes.find((r) => r.id === params.id) ? true : false}
+            recipe={recipe}
             toggleFavorite={toggleFavorite}
           />
         </div>
