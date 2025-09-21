@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Rating, RatingButton } from '@/components/ui/shadcn-io/rating';
 import { Rating as RatingType } from "@/types";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
 
 interface RecipeRatingProps {
   recipeRating?: RatingType
@@ -10,6 +11,7 @@ interface RecipeRatingProps {
 
 export default function RecipeRating({ recipeRating }: RecipeRatingProps) {
   const [rating, setRating] = useState<number>(recipeRating?.score || 0);
+  const { protectAction } = useProtectedAction();
 
   const ratingMapping = [
     { "emoji": "😞", "name": "Very Bad" },
@@ -20,7 +22,9 @@ export default function RecipeRating({ recipeRating }: RecipeRatingProps) {
   ]
 
   const handleRatingChange = (value: number) => {
-    setRating(value);
+    protectAction(
+      () => setRating(value)
+    );
     // Add or update rating in the database later
   };
 
@@ -35,7 +39,7 @@ export default function RecipeRating({ recipeRating }: RecipeRatingProps) {
           </div>
         )
       }
-      <Rating value={rating} onValueChange={setRating} className="flex gap-2">
+      <Rating value={rating} onValueChange={handleRatingChange} className="flex gap-2">
         {Array.from({ length: 5 }).map((_, index) => (
           <RatingButton 
             className="text-yellow-400 w-8 h-8 flex items-center justify-center bg-white rounded-md"

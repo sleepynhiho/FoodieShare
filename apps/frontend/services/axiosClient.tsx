@@ -1,3 +1,4 @@
+import { getToken } from "@/lib/tokenRegistry";
 import axios from "axios";
 
 const axiosClient = axios.create({
@@ -10,7 +11,7 @@ const axiosClient = axios.create({
 // Add request interceptor to include token in headers
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

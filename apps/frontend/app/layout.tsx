@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import "../styles/globals.css";
 
@@ -17,8 +18,10 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" />
       </head>
       <body>
-        {children}
-        <Toaster position="top-center" richColors />
+        <AuthProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </AuthProvider>
       </body>
     </html>
   );
