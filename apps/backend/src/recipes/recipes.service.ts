@@ -363,6 +363,7 @@ export class RecipesService {
       servings: recipe.servings,
       difficulty: recipe.difficulty,
       avgRating: recipe.avgRating,
+      totalRating: recipe.totalRating,
       favoritesCount: recipe._count?.favorites || 0,
       ingredients: recipe.ingredients.map((ingredient: any) => ({
         id: ingredient.id,

@@ -84,3 +84,22 @@ export class AuthGuard implements CanActivate {
   }
 }
 
+@Injectable()
+export class OptionalAuthGuard extends AuthGuard {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const authHeader = request.headers['authorization'];
+
+    if (!authHeader) {
+      request.user = undefined; 
+      return true;
+    }
+
+    try {
+      return await super.canActivate(context);
+    } catch (err) {
+      request.user = undefined;
+      return true;
+    }
+  }
+}
