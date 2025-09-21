@@ -9,7 +9,7 @@ import {
   useEffect,
 } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { registerTokenGetter } from "@/lib/tokenRegistry";
+import { registerTokenGetter, registerTokenSetter } from "@/lib/tokenRegistry";
 
 interface User {
   id: string;
@@ -37,6 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  useEffect(() => {
+  registerTokenGetter(() => token);
+  registerTokenSetter((t) => {
+    setToken(t);
+    setIsAuthenticated(!!t);
+  });
+}, [token, setToken, setIsAuthenticated]);
+
 
   useEffect(() => {
     registerTokenGetter(() => token);
