@@ -9,7 +9,8 @@ import {
   useEffect,
 } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { registerTokenGetter } from "@/lib/tokenRegistry";
+import { registerTokenGetter, registerTokenSetter } from "@/lib/tokenRegistry";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
@@ -32,6 +33,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -39,16 +41,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
 
   useEffect(() => {
+    registerTokenSetter((t) => {
+      setToken(t);
+      setIsAuthenticated(!!t);
+    });
+  });
+
+  useEffect(() => {
     registerTokenGetter(() => token);
   }, [token]);
 
-  const showAuthModal = useCallback(() => {
-    setIsModalOpen(true);
-  }, []);
+  const onLogoutRequired = useCallback(() => {
+    setIsAuthenticated(false);
+    setUser(null);
+    setToken(null);
+    router.push("/login");
+  }, [router]);
 
-  const hideAuthModal = useCallback(() => {
-    setIsModalOpen(false);
-  }, []);
+  useEffect(() => {
+    window.addEventListener("auth:logout-required", onLogoutRequired as EventListener);
+    return () => {
+      window.removeEventListener("auth:logout-required", onLogoutRequired as EventListener);
+    };
+  }, [onLogoutRequired]);
+
+  const showAuthModal = useCallback(() => setIsModalOpen(true), []);
+  const hideAuthModal = useCallback(() => setIsModalOpen(false), []);
 
   return (
     <AuthContext.Provider
