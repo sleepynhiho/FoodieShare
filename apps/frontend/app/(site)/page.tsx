@@ -4,10 +4,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RecipeCard } from "@/components/RecipeCard";
-import { recipes } from "@/mocks/recipes";
-import { users } from "@/mocks/users";
-import { ratings } from "@/mocks/ratings";
-import { favorites } from "@/mocks/favorites";
 import { RECIPE_CATEGORIES, CATEGORY_DISPLAY_NAMES } from "@/lib/constants";
 import { getRecipes, getFeaturedRecipes, getLatestRecipes, getTrendingRecipes } from "@/services/recipeService";
 import { getAppStats, getCategoryStats, getTopAuthors } from "@/services/statsService";
@@ -117,7 +113,6 @@ export default function HomePage() {
 
         // Set top authors (already processed by backend)
         setTopAuthors(topAuthorsData);
-
       } catch (error) {
         console.error('Error loading data:', error);
         // Keep default values on error

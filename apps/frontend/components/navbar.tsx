@@ -3,10 +3,31 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { UtensilsCrossed, Menu, X } from "lucide-react";
+import { 
+  UtensilsCrossed, 
+  Menu, 
+  X, 
+  ChevronDown,
+  Utensils,
+  Sandwich,
+  CakeSlice,
+  Soup,
+  Salad,
+  Coffee
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UserProfileButton } from "@/components/auth/UserProfileButton";
+import { useAuth } from "@/context/AuthContext";
+import { SearchButton } from "./SearchButton";
+import { RECIPE_CATEGORIES, CATEGORY_DISPLAY_NAMES } from "@/lib/constants";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const NavLink = ({
   href,
@@ -34,8 +55,23 @@ const NavLink = ({
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  // isAuthenticated is now directly from context
+  const isLoggedIn = isAuthenticated;
 
   const toggleSidebar = () => setOpen(!open);
+
+  // Category icons mapping
+  const categoryIcons: Record<string, React.ReactNode> = {
+    MainDish: <Utensils className="h-4 w-4 text-orange-500" />,
+    SideDish: <Sandwich className="h-4 w-4 text-orange-500" />,
+    Dessert: <CakeSlice className="h-4 w-4 text-orange-500" />,
+    Soup: <Soup className="h-4 w-4 text-orange-500" />,
+    Salad: <Salad className="h-4 w-4 text-orange-500" />,
+    Appetizer: <Coffee className="h-4 w-4 text-orange-500" />,
+    Beverage: <Coffee className="h-4 w-4 text-orange-500" />,
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full bg-bg-default">
@@ -60,8 +96,50 @@ export function Navbar() {
           <NavLink href="/recipes" active={pathname?.startsWith("/recipes")}>
             Recipes
           </NavLink>
-          <NavLink href="/add-recipe" active={pathname === "/add-recipe"}>
-            Add Recipe
+          {/* Category Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium uppercase text-gray-600 hover:text-black transition-all duration-200 group hover:bg-gray-50 rounded-md">
+                Categories
+                <ChevronDown className="h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="start" 
+              className="w-56 p-2 bg-white border border-gray-200 shadow-xl rounded-xl backdrop-blur-sm"
+              sideOffset={8}
+            >
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-1 mb-1">
+                Browse by Category
+              </div>
+              {RECIPE_CATEGORIES.map((category) => (
+                <DropdownMenuItem key={category} asChild className="p-0">
+                  <Link 
+                    href={`/recipes?category=${category}`}
+                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 cursor-pointer group"
+                  >
+                    <span className="group-hover:scale-110 transition-transform duration-200">
+                      {categoryIcons[category]}
+                    </span>
+                    <span className="font-medium">{CATEGORY_DISPLAY_NAMES[category]}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <Link 
+                  href="/recipes"
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 group"
+                >
+                  <span className="group-hover:scale-110 transition-transform duration-200">
+                    <UtensilsCrossed className="h-4 w-4" />
+                  </span>
+                  <span className="font-medium">View All Recipes</span>
+                </Link>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <NavLink href="/about" active={pathname === "/about"}>
+            About
           </NavLink>
           <NavLink href="/my-collection" active={pathname === "/my-collection"}>
             My Collection
@@ -70,16 +148,32 @@ export function Navbar() {
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
-          {/* Desktop: Sign in button */}
-          <div className="hidden sm:block">
-            <Link href="/login">
+          {/* Desktop: Sign in button or User Profile */}
+          <SearchButton />
+          {/* Add Recipe CTA for logged-in users */}
+          {isLoggedIn && (
+            <Link href="/add-recipe" className="hidden md:block">
               <Button
                 size="sm"
-                className="bg-black text-white border hover:bg-gray-900"
+                className="bg-orange-500 text-white hover:bg-orange-600 font-medium px-4"
               >
-                Sign in
+                + Add Recipe
               </Button>
             </Link>
+          )}
+          <div className="hidden md:block">
+            {isLoggedIn ? (
+              <UserProfileButton />
+            ) : (
+              <Link href="/login">
+                <Button
+                  size="sm"
+                  className="bg-black text-white border hover:bg-gray-900"
+                >
+                  Sign in
+                </Button>
+              </Link>
+            )}
           </div>
           {/* Mobile: Side menu button */}
           <button
@@ -144,12 +238,37 @@ export function Navbar() {
                 >
                   Recipes
                 </NavLink>
+                {/* Categories submenu for mobile */}
+                <div className="flex flex-col gap-1 pl-2 py-2">
+                  <span className="text-xs text-gray-500 uppercase font-semibold tracking-wide mb-2 px-2">
+                    Categories
+                  </span>
+                  {RECIPE_CATEGORIES.map((category) => (
+                    <Link
+                      key={category}
+                      href={`/recipes?category=${category}`}
+                      onClick={toggleSidebar}
+                      className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors duration-200"
+                    >
+                      {categoryIcons[category]}
+                      <span className="font-medium">{CATEGORY_DISPLAY_NAMES[category]}</span>
+                    </Link>
+                  ))}
+                  <Link
+                    href="/recipes"
+                    onClick={toggleSidebar}
+                    className="flex items-center gap-3 px-3 py-2 text-sm text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors duration-200 mt-1 border-t border-gray-100 pt-3"
+                  >
+                    <UtensilsCrossed className="h-4 w-4" />
+                    <span className="font-medium">View All Recipes</span>
+                  </Link>
+                </div>
                 <NavLink
-                  href="/add-recipe"
-                  active={pathname === "/add-recipe"}
+                  href="/about"
+                  active={pathname === "/about"}
                   onClick={toggleSidebar}
                 >
-                  Add Recipe
+                  About
                 </NavLink>
                 <NavLink
                   href="/my-collection"
@@ -159,15 +278,30 @@ export function Navbar() {
                   My Collection
                 </NavLink>
               </nav>
-              <div className="mt-auto pt-4">
-                <Link href="/login">
-                  <Button
-                    size="sm"
-                    className="w-full bg-black text-white border hover:bg-gray-900"
-                  >
-                    Sign in
-                  </Button>
-                </Link>
+              <div className="mt-auto pt-4 space-y-3">
+                {/* Add Recipe CTA for mobile */}
+                {isLoggedIn && (
+                  <Link href="/add-recipe" onClick={toggleSidebar}>
+                    <Button
+                      size="sm"
+                      className="w-full bg-orange-500 text-white hover:bg-orange-600 font-medium"
+                    >
+                      + Add Recipe
+                    </Button>
+                  </Link>
+                )}
+                {isLoggedIn ? (
+                  <UserProfileButton />
+                ) : (
+                  <Link href="/login">
+                    <Button
+                      size="sm"
+                      className="w-full bg-black text-white border hover:bg-gray-900"
+                    >
+                      Sign in
+                    </Button>
+                  </Link>
+                )}
               </div>
             </motion.div>
           </>

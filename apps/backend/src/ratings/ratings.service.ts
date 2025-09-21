@@ -8,7 +8,7 @@ export class RatingsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async rateRecipe(recipeId: string, userId: string, createRatingDto: CreateRatingDto): Promise<RatingResponseDto> {
-    // First, check if recipe exists
+    // Check if recipe exists
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: recipeId },
       select: { id: true, userId: true }
@@ -60,7 +60,7 @@ export class RatingsService {
     }
 
     // Calculate and update average rating for the recipe
-    await this.updateRecipeAverageRating(recipeId);
+    await this.updateRecipeRating(recipeId);
 
     return this.formatRatingResponse(rating);
   }
@@ -149,7 +149,7 @@ export class RatingsService {
     };
   }
 
-  private async updateRecipeAverageRating(recipeId: string): Promise<void> {
+  private async updateRecipeRating(recipeId: string): Promise<void> {
     // Calculate average rating for this recipe
     const ratingStats = await this.prisma.rating.aggregate({
       where: { recipeId },
@@ -158,11 +158,15 @@ export class RatingsService {
     });
 
     const avgRating = ratingStats._avg.score || 0;
+    const totalRating = ratingStats._count.score || 0;
     
     // Update the recipe with the new average rating
     await this.prisma.recipe.update({
       where: { id: recipeId },
-      data: { avgRating: Math.round(avgRating * 10) / 10 } // Round to 1 decimal place
+      data: { 
+        avgRating: Math.round(avgRating * 10) / 10,
+        totalRating: totalRating
+      } // Round to 1 decimal place
     });
   }
 }

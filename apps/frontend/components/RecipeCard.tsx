@@ -1,12 +1,9 @@
 import React from "react";
 import Link from "next/link";
-import { Recipe } from "@/types/recipe";
 
 import { CATEGORY_DISPLAY_NAMES } from "@/lib/constants";
-import { users } from "@/mocks/users";
-import { ratings } from "@/mocks/ratings";
-import { favorites } from "@/mocks/favorites";
 import Favorite from "@/components/ui/favorite";
+import { useFavorites } from "@/context/FavoritesContext";
 
 export const StarIcon = ({ className = "w-4 h-4" }) => (
   <svg
@@ -18,30 +15,20 @@ export const StarIcon = ({ className = "w-4 h-4" }) => (
     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.197-1.539-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.049 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z" />
   </svg>
 );
+
 interface RecipeCardProps {
-  recipe: Recipe;
+  recipe: any; // Using any for now since the API response might differ from Recipe type
   isFavorited?: boolean;
-  onToggleFavorite?: () => void;
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({
-  recipe,
-  isFavorited = false,
-  onToggleFavorite = () => {},
+  recipe
 }) => {
-  const author = users.find((u) => u.id === recipe.authorId);
-  const recipeRatings = ratings.filter((r) => r.recipeId === recipe.id);
-  const averageRating =
-    recipeRatings.length > 0
-      ? (
-          recipeRatings.reduce((sum, r) => sum + r.score, 0) /
-          recipeRatings.length
-        ).toFixed(1)
-      : "-";
+  const author = recipe.author || recipe.user;
+  const averageRating = recipe.avgRating ? recipe.avgRating.toFixed(1) : "-";
 
-  const favoriteCount = favorites.filter(
-    (f) => f.recipeId === recipe.id
-  ).length;
+  const { favoriteRecipes, favoriteCountDict, toggleFavorite } = useFavorites()
+  const isFavorited = favoriteRecipes.find((r) => r.id === String(recipe.id)) ? true : false;
 
   return (
     <div className="relative">
@@ -84,7 +71,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                 {/* Category badge */}
                 {recipe.category && (
                   <span className="px-1 py-0.3 rounded-sm text-gray-700 font-normal text-[10px] bg-[#ffe4b5]">
-                    {CATEGORY_DISPLAY_NAMES[recipe.category] || recipe.category}
+                    {CATEGORY_DISPLAY_NAMES[recipe.category as keyof typeof CATEGORY_DISPLAY_NAMES] || recipe.category}
                   </span>
                 )}
               </div>
@@ -93,11 +80,11 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                 {recipe.description}
               </p>
               <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>⏱ {recipe.prepTime + recipe.cookTime} min</span>
+                <span>⏱ {(recipe.prepTime || 0) + (recipe.cookingTime || 0)} min</span>
                 <span className="flex items-center">
-                  {author && author.avatar && (
+                  {author && (
                     <img
-                      src={author.avatar}
+                      src={author.avatar || "/avatar.jpg"}
                       alt={author.username}
                       className="w-5 h-5 rounded-full mr-2 inline-block"
                     />
@@ -110,7 +97,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                   <StarIcon />
                   <span className="text-sm">{averageRating}</span>
                   <span className="flex items-center text-xs text-gray-500 h-full">
-                    ({recipeRatings.length})
+                    ({recipe.totalRating || 0})
                   </span>
                 </span>
                 <div className="w-[30px]"></div>
@@ -125,15 +112,16 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          onToggleFavorite();
+          toggleFavorite(recipe.id);
         }}
       >
         <Favorite
           isFavorited={isFavorited}
-          toggleFavorite={onToggleFavorite}
-          favoriteCount={favoriteCount}
+          recipe={recipe}
+          toggleFavorite={toggleFavorite}
+          isSmall={true}
         />
-        <span className="text-xs text-gray-500">({favoriteCount})</span>
+        <span className="text-xs text-gray-500">{favoriteCountDict[recipe.id]}</span>
       </div>
     </div>
   );

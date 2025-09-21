@@ -2,7 +2,7 @@ import { Body, Controller, Post, Get, Delete, Param, Req, UseGuards, HttpCode, H
 import { RatingsService } from './ratings.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { RatingResponseDto, RecipeRatingStatsDto } from './dto/rating-response.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, OptionalAuthGuard } from 'src/auth/auth.guard';
 import type { Request } from 'express';
 
 // Extend Express Request interface to include 'user'
@@ -27,8 +27,9 @@ export class RatingsController {
     const userId = req.user.id;
     return this.ratingsService.rateRecipe(recipeId, userId, createRatingDto);
   }
-
+  
   @Get(':id/rating-stats')
+  @UseGuards(OptionalAuthGuard)
   async getRecipeRatingStats(
     @Param('id') recipeId: string,
     @Req() req: Request,

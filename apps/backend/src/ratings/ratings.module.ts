@@ -3,9 +3,10 @@ import { RatingsController } from './ratings.controller';
 import { RatingsService } from './ratings.service';
 import { PrismaModule } from 'src/common/prisma/prisma.module';
 import { SupabaseModule } from 'src/common/supabase/supabase.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, SupabaseModule],
+  imports: [PrismaModule, SupabaseModule, AuthModule],
   controllers: [RatingsController],
   providers: [RatingsService],
   exports: [RatingsService],

@@ -5,13 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import Link from "next/link";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 export default function SignInPage() {
+  const router = useRouter();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const { login } = useAuthActions();
 
   const [touched, setTouched] = React.useState({
     email: false,
@@ -43,10 +50,21 @@ export default function SignInPage() {
     if (!isEmailValid(email) || !isPasswordValid(password)) return;
 
     try {
-      // TODO: call your API here, e.g. await signIn(email, password)
-      // await signIn(email, password);
-    } catch (error) {
-      // TODO: handle error
+      setLoading(true);
+      // Call login API
+      await login(email, password);
+      
+      // Clear form on success
+      setEmail("");
+      setPassword("");
+      setTouched({ email: false, password: false });
+      
+      router.push("/"); // Redirect to homepage
+      toast.success("Logged in successfully!");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,7 +96,6 @@ export default function SignInPage() {
                 className={clsx(
                   emailError && "border-red-500 focus-visible:ring-red-500"
                 )}
-                required
                 placeholder="you@example.com"
               />
               {emailError && <ErrorMessage errorMessage={emailError} />}
@@ -87,18 +104,14 @@ export default function SignInPage() {
             {/* PASSWORD */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onBlur={() => markTouched("password")}
                 aria-invalid={!!passwordError}
                 aria-describedby="password-error"
-                className={clsx(
-                  passwordError && "border-red-500 focus-visible:ring-red-500"
-                )}
-                required
+                error={!!passwordError}
                 placeholder="Your password"
               />
               {passwordError && <ErrorMessage errorMessage={passwordError} />}
@@ -117,9 +130,10 @@ export default function SignInPage() {
           <div className="space-y-4">
             <Button
               type="submit"
+              disabled={loading}
               className="w-full bg-bg-secondary/85 text-white hover:bg-bg-secondary hover:text-white"
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
 
             <p className="text-center text-sm text-gray-600">

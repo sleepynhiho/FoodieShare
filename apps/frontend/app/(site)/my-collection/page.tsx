@@ -1,32 +1,69 @@
-// NOTE: Khi có login page, cần lưu ý các điểm sau:
-// 1. Chỉ hiển thị bộ sưu tập của user đã đăng nhập:
-//    - Dữ liệu sẽ lấy theo user hiện tại
-//    - Nếu chưa đăng nhập, chuyển hướng sang trang login hoặc báo "đăng nhập để xem bộ sưu tập".
-// 2. API hoặc mock data sẽ dùng userId động:
-//    - Thay vì fix userId = 1, sẽ lấy userId từ thông tin đăng nhập.
 "use client";
 
-import { recipes } from "@/mocks/recipes";
-import { favorites } from "@/mocks/favorites";
+import { useEffect, useState } from "react";
 import { RecipeCard } from "@/components/RecipeCard";
-import { useState } from "react";
+import { useFavorites } from "@/context/FavoritesContext";
+import { useAuth } from "@/context/AuthContext";
+import { getUserRecipes } from "@/services/userService";
+import Link from "next/link";
 
 export default function MyCollectionPage() {
-  const userId = 1;
-  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
-    return favorites.filter((f) => f.userId === userId).map((f) => f.recipeId);
-  });
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
 
-  const myRecipes = recipes.filter((r) => r.authorId === userId);
-  const favoriteRecipes = recipes.filter((r) => favoriteIds.includes(r.id));
-
-  const toggleFavorite = (recipeId: number) => {
-    setFavoriteIds((prev) =>
-      prev.includes(recipeId)
-        ? prev.filter((id) => id !== recipeId)
-        : [...prev, recipeId]
+  if (isAuthLoading)
+    return (
+      <div>
+        <img
+          src="/recipe_list_banner.webp"
+          alt="Recipe list banner"
+          className="w-full h-64 object-cover mb-5 rounded-xl object-[70%_70%] md:object-center"
+        />
+        <div className="text-center text-lg py-10">Loading...</div>
+      </div>
     );
-  };
+  if (!isAuthenticated || !user)
+    return (
+      <div>
+        <img
+          src="/recipe_list_banner.webp"
+          alt="Recipe list banner"
+          className="w-full h-64 object-cover mb-5 rounded-xl object-[70%_70%] md:object-center"
+        />
+        <div className="text-center text-lg py-10">
+          <p>
+            You need to{" "}
+            <Link
+              href="/login"
+              className="text-blue-600 underline hover:text-blue-800 transition-colors font-semibold"
+            >
+              log in
+            </Link>{" "}
+            to view your collection.
+          </p>
+        </div>
+      </div>
+    );
+
+  const userId = user?.id || user?.email || user?.name;
+
+  const { favoriteRecipes } = useFavorites();
+
+  const [myRecipes, setMyRecipes] = useState<any[]>([]);
+
+  const getMyRecipes = async () => {
+    try {
+      const data = await getUserRecipes();
+      setMyRecipes(data);
+    } catch (error) {
+      console.error("Failed to fetch user recipes:", error);
+    }
+  }
+
+  useEffect(() => {
+    getMyRecipes();
+  }, []);
+
+  const isEmpty = myRecipes.length === 0 && favoriteRecipes.length === 0;
 
   return (
     <main className="w-full min-h-screen bg-white">
@@ -37,23 +74,44 @@ export default function MyCollectionPage() {
       />
       <div className="w-full flex justify-center items-center"></div>
       <div className="p-4">
-        <h2 className="text-2xl font-bold mb-10">My Recipes</h2>
-        <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
-          {myRecipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              isFavorited={favoriteIds.includes(recipe.id)}
-              onToggleFavorite={() => toggleFavorite(recipe.id)}
-            />
-          ))}
-        </section>
-        <h2 className="text-2xl font-bold mb-10 mt-20">Favorite Recipes</h2>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
-          {favoriteRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
-        </div>
+        {isEmpty ? (
+          <div className="text-center text-lg py-10 flex flex-col items-center gap-4">
+            <p className="mb-2">
+              You don't have any recipes or favorite dishes yet.
+              <br className="mt-20" />
+              Start exploring and adding your favorite recipes!
+            </p>
+            <Link
+              href="/recipes"
+              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Explore Recipes
+            </Link>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-2xl font-bold mb-10">My Recipes</h2>
+            <section className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
+              {myRecipes.map((recipe) => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  isFavorited={favoriteRecipes.find((r) => r.id === (String(recipe.id))) ? true : false}
+                />
+              ))}
+            </section>
+            <h2 className="text-2xl font-bold mb-10 mt-20">Favorite Recipes</h2>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(50px,260px))] gap-5">
+              {favoriteRecipes.map((recipe) => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  isFavorited={true}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { recipes } from "@/mocks/recipes";
-import { users } from "@/mocks/users";
-import { ratings } from "@/mocks/ratings";
+import { getRandomRecipe, toggleFavoriteRecipe } from "@/services/recipeService";
 import { Recipe } from "@/types";
 import { Card } from "@/components/ui/card";
 import {
@@ -22,10 +20,24 @@ import {
 import {
   GiTreasureMap,
   GiOpenTreasureChest,
-  GiLockedChest,
 } from "react-icons/gi";
 
 import "@/styles/randomRecipe.css";
+import { useFavorites } from "@/context/FavoritesContext";
+
+// Extended Recipe type for API response
+interface ApiRecipe extends Omit<Recipe, 'cookTime'> {
+  id: string | number;
+  cookingTime: number; // API uses cookingTime instead of cookTime
+  author?: {
+    id: string;
+    email: string;
+    username: string;
+    avatar?: string;
+  };
+  avgRating?: number;
+  totalRating?: number;
+}
 
 // Star Icon component matching your other card
 export const StarIcon = ({ className = "w-4 h-4" }) => (
@@ -41,12 +53,15 @@ export const StarIcon = ({ className = "w-4 h-4" }) => (
 
 const RandomRecipeBox = () => {
   const [isOpening, setIsOpening] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<ApiRecipe | null>(null);
   const [showRecipe, setShowRecipe] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showChestRays, setShowChestRays] = useState(false);
   const [chestStage, setChestStage] = useState(0); // 0: closed, 1: opening, 2: open
+  const { favoriteRecipes, toggleFavorite } = useFavorites();
+  const [isBookmarked, setIsBookmarked] = useState(
+    favoriteRecipes.find(r => r.id === String(selectedRecipe?.id)) ? true : false
+  );
 
   // Show tooltip after some time if user hasn't interacted
   useEffect(() => {
@@ -60,7 +75,7 @@ const RandomRecipeBox = () => {
     return () => clearTimeout(timer);
   }, [selectedRecipe]);
 
-  const handleBoxClick = () => {
+  const handleBoxClick = async () => {
     if (isOpening) return;
 
     setIsOpening(true);
@@ -85,41 +100,42 @@ const RandomRecipeBox = () => {
       setChestStage(2); // Fully open
     }, 800);
 
-    // Select random recipe and finish animation
-    setTimeout(() => {
-      // Random recipe selection
-      const randomIndex = Math.floor(Math.random() * recipes.length);
-      const randomRecipe = recipes[randomIndex];
-
-      setSelectedRecipe(randomRecipe);
-      setIsOpening(false);
-
-      // Show recipe with animation
-      setTimeout(() => {
-        setShowRecipe(true);
-
-        // Reset chest after recipe shows
+    // Fetch random recipe from API and finish animation
+    setTimeout(async () => {
+      try {
+        const randomRecipe = await getRandomRecipe();
+        setSelectedRecipe(randomRecipe);
+        
+        // Show recipe with animation
         setTimeout(() => {
-          setChestStage(0);
-          setShowChestRays(false);
-        }, 300);
-      }, 200);
+          setShowRecipe(true);
+
+          // Reset chest after recipe shows
+          setTimeout(() => {
+            setChestStage(0);
+            setShowChestRays(false);
+          }, 300);
+        }, 200);
+      } catch (error) {
+        console.error('Error fetching random recipe:', error);
+        // Handle error - maybe show a fallback or error message
+      } finally {
+        setIsOpening(false);
+      }
     }, 1200);
   };
 
-  // Get recipe author and rating data (matching your other card)
-  const getRecipeData = (recipe: Recipe) => {
-    const author = users.find((u) => u.id === recipe.authorId);
-    const recipeRatings = ratings.filter((r) => r.recipeId === recipe.id);
-    const averageRating =
-      recipeRatings.length > 0
-        ? (
-            recipeRatings.reduce((sum, r) => sum + r.score, 0) /
-            recipeRatings.length
-          ).toFixed(1)
-        : "-";
+  // Get recipe author and rating data from API response
+  const getRecipeData = (recipe: ApiRecipe) => {
+    // The API response should already include author and avgRating
+    const author = recipe.author;
+    const averageRating = recipe.avgRating ? recipe.avgRating.toFixed(1) : "-";
+    
+    // For now, we don't have total ratings count in the API response
+    // You may want to add this to the backend later
+    const totalRatings = recipe.totalRating ? recipe.totalRating : 0;
 
-    return { author, averageRating, totalRatings: recipeRatings.length };
+    return { author, averageRating, totalRatings };
   };
 
   // Format category similar to recipe detail page
@@ -323,8 +339,9 @@ const RandomRecipeBox = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsBookmarked(!isBookmarked);
+                  toggleFavorite(selectedRecipe);
                 }}
-                className="absolute bottom-3 right-3 z-30 w-7 h-7 bg-white/20 backdrop-blur-sm
+                className="absolute bottom-3 right-3 z-50 w-7 h-7 bg-white/20 backdrop-blur-sm
                          hover:bg-white/30 rounded-full flex items-center justify-center
                          transition-all duration-200 border border-white/20"
               >
@@ -361,14 +378,13 @@ const RandomRecipeBox = () => {
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100 animate-fade-in-delay">
                     {/* Enhanced Author info */}
                     <div className="flex items-center space-x-2">
-                      {author && author.avatar ? (
+                      {author ? (
                         <div className="relative">
                           <img
-                            src={author.avatar}
+                            src={author.avatar || "/avatar.jpg"}
                             alt={author.username}
-                            className="w-7 h-7 rounded-full ring-2 ring-amber-200 object-cover"
+                            className="w-7 h-7 rounded-full object-cover"
                           />
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
                         </div>
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center ring-2 ring-gray-200">
@@ -406,7 +422,7 @@ const RandomRecipeBox = () => {
                   <div className="flex items-center space-x-1">
                     <Clock size={12} className="text-blue-500" />
                     <span className="text-xs font-medium text-gray-700">
-                      {selectedRecipe.prepTime + selectedRecipe.cookTime}m
+                      {selectedRecipe.prepTime + selectedRecipe.cookingTime}m
                     </span>
                   </div>
                 </div>

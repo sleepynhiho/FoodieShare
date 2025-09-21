@@ -4,6 +4,7 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { RecipeResponseDto } from './dto/recipe-response.dto';
 import { GetRecipesQueryDto, RecipeListResponseDto } from './dto/get-recipes-query.dto';
+import { FavoriteRecipeResponseDto } from './dto/favorite-recipe-response.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import type { Request } from 'express';
 
@@ -34,6 +35,11 @@ export class RecipesController {
     return this.recipesService.findAll(query);
   }
 
+  @Get('random')
+  async findRandom(): Promise<RecipeResponseDto> {
+    return this.recipesService.findRandom();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<RecipeResponseDto> {
     return this.recipesService.findOne(id);
@@ -59,5 +65,16 @@ export class RecipesController {
   ): Promise<void> {
     const userId = req.user.id;
     return this.recipesService.remove(id, userId);
+  }
+
+  @Post(':id/favorite')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async toggleFavorite(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<FavoriteRecipeResponseDto> {
+    const userId = req.user.id;
+    return this.recipesService.toggleFavorite(id, userId);
   }
 }

@@ -4,6 +4,7 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { RecipeResponseDto } from './dto/recipe-response.dto';
 import { GetRecipesQueryDto, RecipeListResponseDto } from './dto/get-recipes-query.dto';
+import { FavoriteRecipeResponseDto } from './dto/favorite-recipe-response.dto';
 
 @Injectable()
 export class RecipesService {
@@ -47,6 +48,11 @@ export class RecipesService {
             avatar: true,
           },
         },
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     });
 
@@ -69,6 +75,11 @@ export class RecipesService {
             email: true,
             username: true,
             avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            favorites: true,
           },
         },
       },
@@ -94,6 +105,7 @@ export class RecipesService {
       maxCookingTime,
       minServings,
       maxServings,
+      minRating,
       authorId,
       sortBy = 'createdAt',
       sortOrder = 'desc'
@@ -136,6 +148,10 @@ export class RecipesService {
       where.servings = { ...where.servings, lte: maxServings };
     }
 
+    if (minRating !== undefined) {
+      where.avgRating = { ...where.avgRating, gte: minRating };
+    }
+
     // Execute queries
     const [recipes, total] = await Promise.all([
       this.prisma.recipe.findMany({
@@ -156,6 +172,11 @@ export class RecipesService {
               email: true,
               username: true,
               avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              favorites: true,
             },
           },
         },
@@ -235,6 +256,11 @@ export class RecipesService {
             avatar: true,
           },
         },
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     });
 
@@ -262,6 +288,71 @@ export class RecipesService {
     });
   }
 
+  async toggleFavorite(recipeId: string, userId: string): Promise<FavoriteRecipeResponseDto> {
+    // Check if recipe exists
+    const recipe = await this.prisma.recipe.findUnique({
+      where: { id: recipeId }
+    });
+
+    if (!recipe) {
+      throw new NotFoundException(`Recipe with ID ${recipeId} not found`);
+    }
+
+    // Check if the recipe is already favorited by the user
+    const existingFavorite = await this.prisma.favorite.findUnique({
+      where: {
+        userId_recipeId: {
+          userId,
+          recipeId,
+        },
+      },
+    });
+
+    let isFavorited: boolean;
+
+    if (existingFavorite) {
+      // If favorite exists, remove it
+      await this.prisma.favorite.delete({
+        where: {
+          id: existingFavorite.id,
+        },
+      });
+      isFavorited = false;
+    } else {
+      // If favorite doesn't exist, create it
+      await this.prisma.favorite.create({
+        data: {
+          userId,
+          recipeId,
+        },
+      });
+      isFavorited = true;
+    }
+
+    // Get the updated favorites count
+    const updatedRecipe = await this.prisma.recipe.findUnique({
+      where: { id: recipeId },
+      include: {
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
+      },
+    });
+
+    if (!updatedRecipe) {
+      throw new NotFoundException(`Recipe with ID ${recipeId} not found`);
+    }
+
+    return {
+      id: recipeId,
+      isFavorited,
+      favoritesCount: updatedRecipe._count.favorites,
+      message: isFavorited ? 'Recipe added to favorites' : 'Recipe removed from favorites',
+    };
+  }
+
   private formatRecipeResponse(recipe: any): RecipeResponseDto {
     return {
       id: recipe.id,
@@ -274,6 +365,8 @@ export class RecipesService {
       servings: recipe.servings,
       difficulty: recipe.difficulty,
       avgRating: recipe.avgRating,
+      totalRating: recipe.totalRating,
+      favoritesCount: recipe._count?.favorites || 0,
       ingredients: recipe.ingredients.map((ingredient: any) => ({
         id: ingredient.id,
         name: ingredient.name,
@@ -296,5 +389,50 @@ export class RecipesService {
       createdAt: recipe.createdAt.toISOString(),
       updatedAt: recipe.updatedAt.toISOString(),
     };
+  }
+
+  async findRandom(): Promise<RecipeResponseDto> {
+    // Use raw SQL for true randomness with PostgreSQL RANDOM() function
+    const result = await this.prisma.$queryRaw`
+      SELECT id FROM "Recipe" 
+      ORDER BY RANDOM() 
+      LIMIT 1
+    ` as { id: string }[];
+    
+    if (!result || result.length === 0) {
+      throw new NotFoundException('No recipes found');
+    }
+
+    const randomId = result[0].id;
+    
+    // Fetch the full recipe data
+    const randomRecipe = await this.prisma.recipe.findUnique({
+      where: { id: randomId },
+      include: {
+        ingredients: true,
+        steps: {
+          orderBy: { order: 'asc' }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
+      },
+    });
+
+    if (!randomRecipe) {
+      throw new NotFoundException('Recipe not found');
+    }
+
+    return this.formatRecipeResponse(randomRecipe);
   }
 }

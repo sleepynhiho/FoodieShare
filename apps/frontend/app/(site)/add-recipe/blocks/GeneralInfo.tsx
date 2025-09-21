@@ -18,6 +18,7 @@ import {
   Difficulty,
   GeneralInfoRef,
 } from "@/types/recipe";
+import { CATEGORY_DISPLAY_NAMES } from "@/lib/constants";
 
 type Props = {
   initial?: Partial<GeneralInfo>;
@@ -25,8 +26,8 @@ type Props = {
 
 const difficulties: Difficulty[] = ["Easy", "Medium", "Hard"];
 const categories: Category[] = [
-  "Main Dish",
-  "Side Dish",
+  "MainDish",
+  "SideDish",
   "Dessert",
   "Soup",
   "Salad",
@@ -69,6 +70,7 @@ const GeneralInformation = React.forwardRef<GeneralInfoRef, Props>(
         category,
         image: cover ? cover.name : undefined, // hoặc upload xử lý khác
       }),
+      getImageFile: (): File | null => cover, // New method to get the actual file
     }));
 
     return (
@@ -146,7 +148,7 @@ const GeneralInformation = React.forwardRef<GeneralInfoRef, Props>(
                 >
                   {categories.map((c) => (
                     <SelectItem key={c} value={c}>
-                      {c}
+                      {CATEGORY_DISPLAY_NAMES[c]}
                     </SelectItem>
                   ))}
                 </SelectContent>

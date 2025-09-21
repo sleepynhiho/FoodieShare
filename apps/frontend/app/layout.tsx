@@ -1,3 +1,5 @@
+import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "sonner";
 import "../styles/globals.css";
 
 export const metadata = {
@@ -12,7 +14,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link rel="icon" href="/favicon.png" />
+      </head>
+      <body>
+        <AuthProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </AuthProvider>
+      </body>
     </html>
   );
 }
