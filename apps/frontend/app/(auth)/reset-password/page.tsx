@@ -1,19 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { resetPassword } from "@/services/authService";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 import { CheckCircle, Circle } from "lucide-react";
+import { toast } from "sonner";
 
-export default function ForgotPasswordPage() {
+export default function ResetPasswordPage() {
+  const router = useRouter();
   const [password, setPassword] = React.useState("");
   const [showRequirements, setShowRequirements] = React.useState(false);
   const [touched, setTouched] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const markTouched = () => setTouched(true);
 
   const requirements = [
@@ -43,10 +48,24 @@ export default function ForgotPasswordPage() {
     setTouched(true);
     if (!isPasswordValid(password)) return;
 
+    const userId = localStorage.getItem("resetPasswordUserId");
+    if (!userId) {
+      toast.error("Your password reset session has expired. Please try again by entering your email.");
+      router.push('/forgot-password');
+      return;
+    }
+
     try {
-      // TODO: call your API here, e.g. await resetPassword(password)
-      // await resetPassword(password);
+      setLoading(true);
+      await resetPassword(userId, password);
+      toast.success("Password has been reset successfully");
+      localStorage.removeItem("resetPasswordUserId"); // Clear the stored userId
+      router.push("/login");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      toast.error("Failed to reset password. Please try again.");
     } finally {
+      setLoading(false);
     }
   };
 
@@ -69,9 +88,8 @@ export default function ForgotPasswordPage() {
               {/* PASSWORD */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setShowRequirements(true)}
@@ -79,11 +97,9 @@ export default function ForgotPasswordPage() {
                     markTouched();
                     if (!password) setShowRequirements(false);
                   }}
+                  error={!!passwordError}
                   aria-invalid={!!passwordError}
                   aria-describedby="password-error"
-                  className={clsx(
-                    passwordError && "border-red-500 focus-visible:ring-red-500"
-                  )}
                   required
                   placeholder="Your new password"
                 />
@@ -123,11 +139,11 @@ export default function ForgotPasswordPage() {
           <div className="space-y-4 mt-auto">
             <Button
               type="submit"
-              className="w-full bg-bg-secondary/85 text-white/80 hover:bg-bg-secondary hover:text-white"
+              disabled={loading}
+              className="w-full bg-bg-secondary/85 text-white/80 hover:bg-bg-secondary hover:text-white disabled:opacity-60"
             >
-              Save new password
-            </Button>
-
+              {loading ? "Saving..." : "Save new password"}
+            </Button>{" "}
             <p className="text-center text-sm text-gray-600">
               Remember your password?{" "}
               <Link

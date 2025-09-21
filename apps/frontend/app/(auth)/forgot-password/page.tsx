@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { sendResetPasswordEmail } from "@/services/authService";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
 import { CheckCircle, Info } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = React.useState("");
@@ -35,14 +37,17 @@ export default function ForgotPasswordPage() {
     setTouched({ email: true });
     if (!isEmailValid(email)) return;
 
-    try {
-      setLoading(true);
-      // TODO: call your API here, e.g. await resetPassword(email)
-      // await resetPassword(email);
-      setSent(true);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const { userId } = await sendResetPasswordEmail(email);
+    localStorage.setItem("resetPasswordUserId", userId);
+
+    // Still show the success message even if the email doesn't exist
+    setLoading(false);
+    setSent(true);
+    setEmail("");
+    toast.success(
+      "If the email exists, we have sent a password reset link. Please check your inbox."
+    );
   };
 
   return (
@@ -76,16 +81,6 @@ export default function ForgotPasswordPage() {
                   placeholder="you@example.com"
                 />
                 {emailError && <ErrorMessage errorMessage={emailError} />}
-
-                {sent && (
-                  <div className="flex items-start gap-2 rounded-md bg-amber-50 dark:bg-amber-900/20 p-3 text-sm">
-                    <Info className="mt-0.5 h-4 w-4 flex-none" />
-                    <p>
-                      If an account exists for <b>{email}</b>, we&apos;ve sent a
-                      password reset link. Please check your inbox (and spam).
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           </div>

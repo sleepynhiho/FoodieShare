@@ -14,7 +14,7 @@ let waiters: Array<{ resolve: (v?: unknown) => void; reject: (e: any) => void }>
 const onRefreshed = () => { waiters.forEach(w => w.resolve()); waiters = []; };
 const onRefreshError = (e: any) => { waiters.forEach(w => w.reject(e)); waiters = []; };
 
-// Request: gắn token hiện tại
+// Request: attach current token
 axiosClient.interceptors.request.use(
   (config) => {
     const token = getToken();
@@ -48,16 +48,16 @@ axiosClient.interceptors.response.use(
     if (!isRefreshing) {
       isRefreshing = true;
       try {
-        const newAccess = await refreshToken(); // cookie gửi kèm
-        // 1) Update header mặc định cho TẤT CẢ request sau
+        const newAccess = await refreshToken();
+        // Update default header for all subsequent requests
         axiosClient.defaults.headers.common.Authorization = `Bearer ${newAccess}`;
-        // 2) Đẩy vào Context qua registry để getToken() trả token mới
+        // Push new token into Context via registry
         setTokenFromOutside(newAccess);
-        // 3) Đánh thức waiters
+        // Wake up the waiters
         onRefreshed();
       } catch (e) {
-        onRefreshError(e); // reject toàn bộ waiters
-        // Có thể clear Context/redirect login ở đây tuỳ app
+        onRefreshError(e);
+        // clear Context, redirect to login page
         return Promise.reject(e);
       } finally {
         isRefreshing = false;
@@ -66,7 +66,7 @@ axiosClient.interceptors.response.use(
       await new Promise((resolve, reject) => waiters.push({ resolve, reject }));
     }
 
-    // Retry request với token mới
+    // Retry request with new token
     original.headers = original.headers ?? {};
     const auth = axiosClient.defaults.headers.common.Authorization;
     if (auth) (original.headers as any).Authorization = auth;
