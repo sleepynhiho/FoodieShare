@@ -371,14 +371,13 @@ const RandomRecipeBox = () => {
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100 animate-fade-in-delay">
                     {/* Enhanced Author info */}
                     <div className="flex items-center space-x-2">
-                      {author && author.avatar ? (
+                      {author ? (
                         <div className="relative">
                           <img
-                            src={author.avatar}
+                            src={author.avatar || "/avatar.jpg"}
                             alt={author.username}
-                            className="w-7 h-7 rounded-full ring-2 ring-amber-200 object-cover"
+                            className="w-7 h-7 rounded-full object-cover"
                           />
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
                         </div>
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center ring-2 ring-gray-200">

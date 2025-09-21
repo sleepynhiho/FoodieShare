@@ -59,14 +59,14 @@ export function UserProfileButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {user?.avatar ? (
+        {user ? (
           <Button
             variant="ghost"
             size="icon"
             className="rounded-full p-0 h-8 w-8 hover:ring-2 hover:ring-orange-500 hover:ring-offset-2 transition-all duration-200"
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarImage src={user.avatar || "/avatar.jpg"} alt={user.username} />
               <AvatarFallback className="bg-orange-500 text-white text-xs">
                 {user.username?.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -87,7 +87,7 @@ export function UserProfileButton() {
           <>
             <div className="flex items-center justify-start gap-3 p-3">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user.avatar} alt={user.username} />
+                <AvatarImage src={user.avatar || "/avatar.jpg"} alt={user.username} />
                 <AvatarFallback className="bg-orange-500 text-white text-sm">
                   {user.username?.charAt(0).toUpperCase()}
                 </AvatarFallback>

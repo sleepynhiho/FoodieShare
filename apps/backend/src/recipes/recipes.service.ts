@@ -48,6 +48,11 @@ export class RecipesService {
             avatar: true,
           },
         },
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     });
 
@@ -70,6 +75,11 @@ export class RecipesService {
             email: true,
             username: true,
             avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            favorites: true,
           },
         },
       },
@@ -162,6 +172,11 @@ export class RecipesService {
               avatar: true,
             },
           },
+          _count: {
+            select: {
+              favorites: true,
+            },
+          },
         },
       }),
       this.prisma.recipe.count({ where })
@@ -239,6 +254,11 @@ export class RecipesService {
             avatar: true,
           },
         },
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
       },
     });
 
@@ -286,6 +306,8 @@ export class RecipesService {
       },
     });
 
+    let isFavorited: boolean;
+
     if (existingFavorite) {
       // If favorite exists, remove it
       await this.prisma.favorite.delete({
@@ -293,12 +315,7 @@ export class RecipesService {
           id: existingFavorite.id,
         },
       });
-
-      return {
-        id: recipeId,
-        isFavorited: false,
-        message: 'Recipe removed from favorites',
-      };
+      isFavorited = false;
     } else {
       // If favorite doesn't exist, create it
       await this.prisma.favorite.create({
@@ -307,13 +324,31 @@ export class RecipesService {
           recipeId,
         },
       });
-
-      return {
-        id: recipeId,
-        isFavorited: true,
-        message: 'Recipe added to favorites',
-      };
+      isFavorited = true;
     }
+
+    // Get the updated favorites count
+    const updatedRecipe = await this.prisma.recipe.findUnique({
+      where: { id: recipeId },
+      include: {
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
+      },
+    });
+
+    if (!updatedRecipe) {
+      throw new NotFoundException(`Recipe with ID ${recipeId} not found`);
+    }
+
+    return {
+      id: recipeId,
+      isFavorited,
+      favoritesCount: updatedRecipe._count.favorites,
+      message: isFavorited ? 'Recipe added to favorites' : 'Recipe removed from favorites',
+    };
   }
 
   private formatRecipeResponse(recipe: any): RecipeResponseDto {
@@ -328,6 +363,7 @@ export class RecipesService {
       servings: recipe.servings,
       difficulty: recipe.difficulty,
       avgRating: recipe.avgRating,
+      favoritesCount: recipe._count?.favorites || 0,
       ingredients: recipe.ingredients.map((ingredient: any) => ({
         id: ingredient.id,
         name: ingredient.name,
@@ -380,6 +416,11 @@ export class RecipesService {
             email: true,
             username: true,
             avatar: true,
+          },
+        },
+        _count: {
+          select: {
+            favorites: true,
           },
         },
       },
