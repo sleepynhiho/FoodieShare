@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { recipes } from "@/mocks/recipes"
 import { Recipe } from "@/types"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +12,8 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import { DialogDescription } from "@radix-ui/react-dialog";
+import useDebounce from "@/hooks/useDebounce";
+import { getRecipes } from "@/services/recipeService";
 
 interface RecipeResultProps {
   recipe: Recipe
@@ -56,11 +57,22 @@ const RecipeResult: React.FC<RecipeResultProps> = ({ recipe }) => {
 
 export const SearchButton = () => {
   const [searchInput, setSearchInput] = useState<string>("")
+  const [searchResults, setSearchResults] = useState<Recipe[]>([])
+  const debouncedSearch = useDebounce(searchInput, 500) 
 
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSearchInput = event.target.value.toLowerCase()
     setSearchInput(newSearchInput)
   }
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const res = await getRecipes({ search: debouncedSearch, limit: 20 })
+      const searchResults = res.recipes
+      setSearchResults(searchResults)
+    }
+    fetchRecipes()
+  }, [debouncedSearch])
 
   return (
     <Dialog
@@ -97,13 +109,7 @@ export const SearchButton = () => {
             <div className="bg-white rounded-md px-1 py-1">
               <div className="flex flex-col px-2 py-2 max-h-[400px] overflow-y-auto">
                 {(() => {
-                  const results = recipes.filter((recipe) => {
-                    return searchInput === ""
-                      ? false
-                      : recipe.title.toLowerCase().includes(searchInput)
-                  })
-
-                  if (results.length === 0) {
+                  if (searchResults.length === 0) {
                     return (
                       <h1 className="text-center text-text-muted font-bold py-2">
                         {"No results"}
@@ -111,7 +117,7 @@ export const SearchButton = () => {
                     )
                   }
 
-                  return results.map((recipe) => <RecipeResult key={recipe.id} recipe={recipe} />)
+                  return searchResults.map((recipe) => <RecipeResult key={recipe.id} recipe={recipe} />)
                 })()}
               </div>
             </div>
