@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getRandomRecipe } from "@/services/recipeService";
+import { getRandomRecipe, toggleFavoriteRecipe } from "@/services/recipeService";
 import { Recipe } from "@/types";
 import { Card } from "@/components/ui/card";
 import {
@@ -23,9 +23,11 @@ import {
 } from "react-icons/gi";
 
 import "@/styles/randomRecipe.css";
+import { useFavorites } from "@/context/FavoritesContext";
 
 // Extended Recipe type for API response
 interface ApiRecipe extends Omit<Recipe, 'cookTime'> {
+  id: string | number;
   cookingTime: number; // API uses cookingTime instead of cookTime
   author?: {
     id: string;
@@ -54,9 +56,12 @@ const RandomRecipeBox = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<ApiRecipe | null>(null);
   const [showRecipe, setShowRecipe] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showChestRays, setShowChestRays] = useState(false);
   const [chestStage, setChestStage] = useState(0); // 0: closed, 1: opening, 2: open
+  const { favoriteRecipes, toggleFavorite } = useFavorites();
+  const [isBookmarked, setIsBookmarked] = useState(
+    favoriteRecipes.find(r => r.id === String(selectedRecipe?.id)) ? true : false
+  );
 
   // Show tooltip after some time if user hasn't interacted
   useEffect(() => {
@@ -334,8 +339,9 @@ const RandomRecipeBox = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsBookmarked(!isBookmarked);
+                  toggleFavorite(selectedRecipe);
                 }}
-                className="absolute bottom-3 right-3 z-30 w-7 h-7 bg-white/20 backdrop-blur-sm
+                className="absolute bottom-3 right-3 z-50 w-7 h-7 bg-white/20 backdrop-blur-sm
                          hover:bg-white/30 rounded-full flex items-center justify-center
                          transition-all duration-200 border border-white/20"
               >

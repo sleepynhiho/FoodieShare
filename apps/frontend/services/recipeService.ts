@@ -159,3 +159,15 @@ export const deleteRecipe = async (id: string) => {
     throw error;
   }
 };
+
+/** Favorite or unfavorite a recipe
+ */
+export const toggleFavoriteRecipe = async (id: string) => {
+  try {
+    const response = await axiosClient.post(`/recipes/${id}/favorite`);
+    return response.data;
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    throw error;
+  }
+}

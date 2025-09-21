@@ -23,9 +23,8 @@ import {
   PAGINATION_DEFAULTS,
 } from "@/lib/constants";
 import { RecipeFilters } from "@/components/RecipeFilters";
-import { useFavorites } from "@/context/FavoritesContext";
 import { getRecipes } from "@/services/recipeService";
-import { getUserFavorites } from "@/services/statsService";
+import { useFavorites } from "@/context/FavoritesContext";
 
 const categories = RECIPE_CATEGORIES;
 
@@ -33,6 +32,8 @@ export default function RecipesPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+
+  const { setFavoriteCountDict } = useFavorites()
 
   // Get initial values from URL query parameters
   const getInitialCategory = () => searchParams.get('category') as Category | null || "All";
@@ -57,7 +58,7 @@ export default function RecipesPage() {
   });
 
   // State management with URL-based initial values
-  const [recipes, setRecipes] = useState<any[]>([]);
+  const [ recipes, setRecipes ] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalRecipes, setTotalRecipes] = useState(0);
@@ -96,7 +97,6 @@ export default function RecipesPage() {
   const [sortBy, setSortBy] = useState(getInitialSort());
   const [sortOrder, setSortOrder] = useState(getInitialSortOrder());
   const [showOrderDropdown, setShowOrderDropdown] = useState(false);
-  const { favoriteIds, setFavoriteIds } = useFavorites();
   const PAGE_SIZE = PAGINATION_DEFAULTS.PAGE_SIZE;
 
   // Function to update URL with current filter state
@@ -240,10 +240,13 @@ export default function RecipesPage() {
       // Handle the response format from the API
       const recipes = response.recipes || response.data || [];
       const total = response.total || response.count || recipes.length;
-      
+
+      const recipeFavoriteCountDict: { [key: string]: number } = {};
+      recipes.forEach((recipe: any) => { recipeFavoriteCountDict[String(recipe.id)] = recipe.favoritesCount || 0 })
+      setFavoriteCountDict(recipeFavoriteCountDict)
+
       setRecipes(recipes);
       setTotalRecipes(total);
-      
     } catch (err) {
       console.error('Error loading recipes:', err);
       setError('Failed to load recipes. Please try again.');
@@ -253,29 +256,29 @@ export default function RecipesPage() {
   };
 
   // Load user favorites
-  const loadUserFavorites = async () => {
-    try {
-      const userFavorites = await getUserFavorites();
-      const favoriteRecipeIds = userFavorites.map((fav: any) => fav.recipeId); // Keep as string
-      setFavoriteIds(favoriteRecipeIds);
-    } catch (err) {
-      console.error('Error loading favorites:', err);
-      // Fallback to localStorage or empty array
-      const storedFavorites = localStorage.getItem(`favorites_user_1`);
-      if (storedFavorites) {
-        setFavoriteIds(JSON.parse(storedFavorites));
-      }
-    }
-  };
+  // const loadUserFavorites = async () => {
+  //   try {
+  //     const userFavorites = await getUserFavorites();
+  //     const favoriteRecipeIds = userFavorites.map((fav: any) => fav.recipeId); // Keep as string
+  //     setFavoriteIds(favoriteRecipeIds);
+  //   } catch (err) {
+  //     console.error('Error loading favorites:', err);
+  //     // Fallback to localStorage or empty array
+  //     const storedFavorites = localStorage.getItem(`favorites_user_1`);
+  //     if (storedFavorites) {
+  //       setFavoriteIds(JSON.parse(storedFavorites));
+  //     }
+  //   }
+  // };
 
   // Effects
   useEffect(() => {
     loadRecipes();
   }, [currentPage, selectedCategory, filters.difficulty, filters.minRating, filters.sortBy, filters.sortOrder, filters.minCookTime, filters.maxCookTime, filters.minPrepTime, filters.maxPrepTime]);
 
-  useEffect(() => {
-    loadUserFavorites();
-  }, []);
+  // useEffect(() => {
+  //   loadUserFavorites();
+  // }, []);
 
   // Sync URL parameters with state when URL changes
   useEffect(() => {
@@ -707,7 +710,6 @@ export default function RecipesPage() {
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
-                  isFavorited={favoriteIds.includes(recipe.id)}
                 />
               ))
             )}

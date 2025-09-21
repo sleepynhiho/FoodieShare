@@ -1,7 +1,5 @@
 import React from "react";
-import { useState } from "react";
 import Link from "next/link";
-import { Recipe } from "@/types/recipe";
 
 import { CATEGORY_DISPLAY_NAMES } from "@/lib/constants";
 import Favorite from "@/components/ui/favorite";
@@ -24,18 +22,13 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({
-  recipe,
-  isFavorited = false
+  recipe
 }) => {
-  const author = recipe.author;
+  const author = recipe.author || recipe.user;
   const averageRating = recipe.avgRating ? recipe.avgRating.toFixed(1) : "-";
 
-  const { toggleFavorite, favoriteCountDict } = useFavorites()
-  const getFavoriteCount = () => {
-    if (!favoriteCountDict[recipe.id])
-      favoriteCountDict[recipe.id] = 0
-    return favoriteCountDict[recipe.id]
-  }
+  const { favoriteRecipes, favoriteCountDict, toggleFavorite } = useFavorites()
+  const isFavorited = favoriteRecipes.find((r) => r.id === String(recipe.id)) ? true : false;
 
   return (
     <div className="relative">
@@ -119,16 +112,16 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          toggleFavorite(1, recipe.id);
+          toggleFavorite(recipe.id);
         }}
       >
         <Favorite
           isFavorited={isFavorited}
-          recipeId={recipe.id}
+          recipe={recipe}
           toggleFavorite={toggleFavorite}
           isSmall={true}
         />
-        <span className="text-xs text-gray-500">({getFavoriteCount()})</span>
+        <span className="text-xs text-gray-500">{favoriteCountDict[recipe.id]}</span>
       </div>
     </div>
   );

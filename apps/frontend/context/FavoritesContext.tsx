@@ -1,47 +1,62 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { getUserFavoriteRecipes } from "@/services/userService";
+import { toggleFavoriteRecipe } from "@/services/recipeService";
+
+type Recipe = { id: string; [key: string]: any };
 
 type FavoritesContextType = {
-  favoriteIds: string[]; // Changed to string to match API
-  setFavoriteIds: React.Dispatch<React.SetStateAction<string[]>>;
-  toggleFavorite: (recipeId: string | number, userId?: number) => void; // Support both types
+  toggleFavorite: (recipeId: { id: string | number }) => void; 
   favoriteCountDict: { [key: string]: number };
   setFavoriteCountDict: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
+  favoriteRecipes: Recipe[];
+  setFavoriteRecipes: React.Dispatch<React.SetStateAction<Recipe[]>>;
 };
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
+export const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]); // Changed to string array
+  const [favoriteRecipes, setFavoriteRecipes] = useState<Recipe[]>([])
   const [favoriteCountDict, setFavoriteCountDict] = useState<{ [key: string]: number }>({})
 
-  useEffect(() => {
-    const storedFavoriteCountDict = localStorage.getItem("favoriteCountDict")
-    if (storedFavoriteCountDict) {
-      setFavoriteCountDict(JSON.parse(storedFavoriteCountDict))
-    } else {
-      setFavoriteCountDict({}) // Start with empty dict
+  const getFavoriteRecipes = async () => {
+    try {
+      const data = await getUserFavoriteRecipes()
+      console.log("Fetched favorite recipes:", data);
+      setFavoriteRecipes(data)
+    } catch (error) {
+      console.error("Failed to fetch favorite recipes:", error)
     }
+  }
+
+  useEffect(() => {
+    getFavoriteRecipes()
   }, [])
 
-  const toggleFavorite = (recipeId: string | number, userId: number = 1) => {
-    const recipeIdStr = String(recipeId); // Convert to string for consistency
-    const updatedFavoriteIds = favoriteIds.includes(recipeIdStr)
-      ? favoriteIds.filter((id) => id !== recipeIdStr)
-      : [...favoriteIds, recipeIdStr]
-    
-    const updatedFavoriteCountDict = favoriteIds.includes(recipeIdStr)
+  const toggleFavorite = async (recipe: { id: string | number }) => {
+    const recipeIdStr = String(recipe.id); 
+
+    const updatedFavoriteRecipes = favoriteRecipes.find((r) => r.id === recipeIdStr)
+      ? favoriteRecipes.filter((r) => r.id === recipeIdStr ? false : true)
+      : [...favoriteRecipes, { ...recipe, id: recipeIdStr }]
+    setFavoriteRecipes(updatedFavoriteRecipes)
+
+    const updatedFavoriteCountDict = favoriteRecipes.find((r) => r.id === recipeIdStr)
       ? {...favoriteCountDict, [recipeIdStr]: Math.max(0, (favoriteCountDict[recipeIdStr] || 1) - 1)}
       : {...favoriteCountDict, [recipeIdStr]: (favoriteCountDict[recipeIdStr] || 0) + 1}
-
-    setFavoriteIds(updatedFavoriteIds)
     setFavoriteCountDict(updatedFavoriteCountDict)
-    localStorage.setItem(`favorites_user_${userId}`, JSON.stringify(updatedFavoriteIds))
-    localStorage.setItem(`favoriteCountDict`, JSON.stringify(updatedFavoriteCountDict))
-  };
+
+    try {
+      await toggleFavoriteRecipe(recipeIdStr)
+    } catch (error) {
+      setFavoriteRecipes(favoriteRecipes);
+      setFavoriteCountDict(favoriteCountDict)
+      console.error("Error toggling favorite:", error);
+    }
+  }
 
   return (
     <FavoritesContext.Provider value={{ 
-      favoriteIds, setFavoriteIds, toggleFavorite,
+      favoriteRecipes, setFavoriteRecipes, toggleFavorite,
       favoriteCountDict, setFavoriteCountDict
     }}>
       {children}
