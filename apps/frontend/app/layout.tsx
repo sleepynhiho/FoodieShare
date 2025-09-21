@@ -1,6 +1,6 @@
+import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "sonner";
 import "../styles/globals.css";
-import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
   title: "FoodieShare",
