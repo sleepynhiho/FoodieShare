@@ -4,6 +4,7 @@
 import { Navbar } from "@/components/navbar";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import RandomRecipeBox from "@/components/RandomRecipeBox";
+
 import * as React from "react";
 
 export default function SiteLayout({

@@ -9,15 +9,16 @@ import { PasswordInput } from "@/components/auth/PasswordInput";
 import Link from "next/link";
 import clsx from "clsx";
 import { ErrorMessage } from "@/components/auth/ErrorMessage";
-import { login } from "@/services/authService";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const { login } = useAuthActions();
 
   const [touched, setTouched] = React.useState({
     email: false,

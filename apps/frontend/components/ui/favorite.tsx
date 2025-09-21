@@ -1,5 +1,6 @@
 import { IconButton } from "@/components/ui/shadcn-io/icon-button";
 import { Heart } from "lucide-react";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
 
 interface FavoriteProps {
   isFavorited: boolean;
@@ -14,6 +15,8 @@ export default function Favorite({
   toggleFavorite,
   isSmall = false
 }: FavoriteProps) {
+  const { protectAction } = useProtectedAction();
+
   return (
     <div className="flex flex-col items-center">
       <IconButton
@@ -23,7 +26,9 @@ export default function Favorite({
         color={[239, 68, 68]} // red-500
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
-          toggleFavorite(recipeId, 1);
+          protectAction(
+            () => toggleFavorite(recipeId, 1)
+          );
         }}
       />
     </div>

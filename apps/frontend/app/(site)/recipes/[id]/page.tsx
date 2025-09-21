@@ -10,6 +10,7 @@ import { getRecipe } from "@/services/recipeService"
 import { getRecipeRatingStats } from "@/services/ratingsService"
 import { toast } from "sonner"
 import { submitRating } from "@/services/ratingsService";
+import { useProtectedAction } from "@/hooks/useProtectedAction";
 
 interface RecipePageProps {
   params: {
@@ -19,6 +20,8 @@ interface RecipePageProps {
 
 export default function RecipeDetailPage({ params }: RecipePageProps) {
   const { favoriteIds, toggleFavorite } = useFavorites()
+
+  const { protectAction } = useProtectedAction();
 
   // State management
   const [recipe, setRecipe] = useState<any>(null)
@@ -37,24 +40,28 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
     setRating(ratingStats.userRating || 0)
   }, [ratingStats.userRating])
 
-  const handleRatingChange = async (value: number) => {
-    if (!canClick) return
-    setCanClick(false)
-
-    setRating(value)
-
-    try {
-      await submitRating(params.id, value)
-      toast.success("Thanks for rating!", {
-        duration: 2000
-      })
-    } catch (error) {
-      toast.error("Please login to rate the recipe!", {
-        duration: 2000
-      })
-    } finally {
-      setTimeout(() => setCanClick(true), 2000)
-    }
+  const handleRatingChange = (value: number) => {
+    protectAction(
+      async () => {
+        if (!canClick) return
+        setCanClick(false)
+    
+        setRating(value)
+    
+        try {
+          await submitRating(params.id, value)
+          toast.success("Thanks for rating!", {
+            duration: 2000
+          })
+        } catch (error) {
+          toast.error("Please login to rate the recipe!", {
+            duration: 2000
+          })
+        } finally {
+          setTimeout(() => setCanClick(true), 2000)
+        }
+      }
+    )
   };
 
   // Load recipe data

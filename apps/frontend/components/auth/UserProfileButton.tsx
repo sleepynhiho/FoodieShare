@@ -12,39 +12,28 @@ import {
 import { User, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { logout, getCurrentUser, refreshUserData } from "@/services/authService";
-import { useEffect, useState } from "react";
+import { refreshUserData } from "@/services/authService";
+import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 export function UserProfileButton() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const { user, setUser } = useAuth();
+  const { logout } = useAuthActions();
 
   useEffect(() => {
     const fetchUser = async () => {
-      // First get user from localStorage for immediate display
-      const cachedUser = getCurrentUser();
-      if (cachedUser) {
-        setUser(cachedUser);
+      try {
+        const data = await refreshUserData();
+        setUser(data);
+      } catch (err) {
+        console.error("Failed to refresh user data:", err);
       }
-      
-      // Then refresh with latest data from API
-      const freshUserData = await refreshUserData();
-      setUser(freshUserData);
     };
-    
+
     fetchUser();
-
-    // Listen for profile updates
-    const handleProfileUpdate = (event: CustomEvent) => {
-      setUser(event.detail);
-    };
-
-    window.addEventListener('userProfileUpdated', handleProfileUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('userProfileUpdated', handleProfileUpdate as EventListener);
-    };
-  }, []);
+  }, [setUser]);
 
   const handleLogout = async () => {
     try {
@@ -59,14 +48,14 @@ export function UserProfileButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {user?.avatar ? (
+        {user ? (
           <Button
             variant="ghost"
             size="icon"
             className="rounded-full p-0 h-8 w-8 hover:ring-2 hover:ring-orange-500 hover:ring-offset-2 transition-all duration-200"
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarImage src={user.avatar || "/avatar.jpg"} alt={user.username} />
               <AvatarFallback className="bg-orange-500 text-white text-xs">
                 {user.username?.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -87,13 +76,15 @@ export function UserProfileButton() {
           <>
             <div className="flex items-center justify-start gap-3 p-3">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={user.avatar} alt={user.username} />
+                <AvatarImage src={user.avatar || "/avatar.jpg"} alt={user.username} />
                 <AvatarFallback className="bg-orange-500 text-white text-sm">
                   {user.username?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.username}</p>
+                <p className="text-sm font-medium leading-none">
+                  {user.username}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user.email}
                 </p>

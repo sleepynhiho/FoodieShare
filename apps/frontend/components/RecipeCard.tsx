@@ -89,9 +89,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               <div className="flex items-center justify-between text-xs text-gray-400">
                 <span>⏱ {(recipe.prepTime || 0) + (recipe.cookingTime || 0)} min</span>
                 <span className="flex items-center">
-                  {author && author.avatar && (
+                  {author && (
                     <img
-                      src={author.avatar}
+                      src={author.avatar || "/avatar.jpg"}
                       alt={author.username}
                       className="w-5 h-5 rounded-full mr-2 inline-block"
                     />
