@@ -7,7 +7,9 @@ export enum SortField {
   TITLE = 'title',
   PREP_TIME = 'prepTime',
   COOKING_TIME = 'cookingTime',
-  SERVINGS = 'servings'
+  SERVINGS = 'servings',
+  RATING = 'avgRating',
+  FAVORITES = 'favoritesCount'
 }
 
 export enum SortOrder {

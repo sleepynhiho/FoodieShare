@@ -142,7 +142,9 @@ export class RecipesService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: sortBy === 'favoritesCount' 
+          ? { favorites: { _count: sortOrder } }
+          : { [sortBy]: sortOrder },
         include: {
           ingredients: true,
           steps: {

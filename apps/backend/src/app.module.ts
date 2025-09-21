@@ -7,6 +7,7 @@ import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { RatingsModule } from './ratings/ratings.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { RatingsModule } from './ratings/ratings.module';
     EmailModule,
     UsersModule,
     RecipesModule,
-    RatingsModule
+    RatingsModule,
+    CloudinaryModule
   ],
   controllers: [AppController],
   providers: [AppService]
