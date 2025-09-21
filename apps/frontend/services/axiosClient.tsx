@@ -9,10 +9,19 @@ const axiosClient = axios.create({
 });
 
 let isRefreshing = false;
-let waiters: Array<{ resolve: (v?: unknown) => void; reject: (e: any) => void }> = [];
+let waiters: Array<{
+  resolve: (v?: unknown) => void;
+  reject: (e: any) => void;
+}> = [];
 
-const onRefreshed = () => { waiters.forEach(w => w.resolve()); waiters = []; };
-const onRefreshError = (e: any) => { waiters.forEach(w => w.reject(e)); waiters = []; };
+const onRefreshed = () => {
+  waiters.forEach((w) => w.resolve());
+  waiters = [];
+};
+const onRefreshError = (e: any) => {
+  waiters.forEach((w) => w.reject(e));
+  waiters = [];
+};
 
 // Request: attach current token
 axiosClient.interceptors.request.use(
@@ -31,7 +40,9 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
-    const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean });
+    const original = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
     const url = original?.url || "";
     const isAuthRoute =
@@ -57,7 +68,13 @@ axiosClient.interceptors.response.use(
         onRefreshed();
       } catch (e) {
         onRefreshError(e);
-        // clear Context, redirect to login page
+        // Clear the login session
+        delete axiosClient.defaults.headers.common.Authorization;
+        setTokenFromOutside(null);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("auth:logout-required"));
+        }
+
         return Promise.reject(e);
       } finally {
         isRefreshing = false;
