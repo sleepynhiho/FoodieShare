@@ -101,7 +101,7 @@ export class AuthController {
     if (!authHeader)
       throw new UnauthorizedException("No token provided!")
 
-    const accessToken = authHeader.replace("Bearer", "")
+    const accessToken = authHeader.replace("Bearer ", "")
     const res = await this.logoutService.logout(accessToken)
     if (res) {
       response.clearCookie("refreshToken"); 
