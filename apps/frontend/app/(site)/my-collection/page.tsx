@@ -1,16 +1,15 @@
 "use client";
 
-import { SessionProvider, useSession } from "next-auth/react";
 import { recipes } from "@/mocks/recipes";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useFavorites } from "@/context/FavoritesContext";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
 
 export default function MyCollectionPage() {
-  const { data: session, status } = useSession();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
 
-  console.log("session", session);
-
-  if (status === "loading") {
+  if (isAuthLoading)
     return (
       <div>
         <img
@@ -18,34 +17,35 @@ export default function MyCollectionPage() {
           alt="Recipe list banner"
           className="w-full h-64 object-cover mb-5 rounded-xl object-[70%_70%] md:object-center"
         />
-        <div className="text-center text-xl mt-10">Loading...</div>
+        <div className="text-center text-lg py-10">Loading...</div>
       </div>
     );
-  }
-
-  const user = session?.user as { id?: string; email?: string; name?: string };
-  const userId = user?.id || user?.email || user?.name;
-
-  const { favoriteIds } = useFavorites();
-
-  if (!userId) {
+  if (!isAuthenticated || !user)
     return (
-      <div className="text-center">
+      <div>
         <img
           src="/recipe_list_banner.webp"
           alt="Recipe list banner"
           className="w-full h-64 object-cover mb-5 rounded-xl object-[70%_70%] md:object-center"
         />
-        <p className="text-xl mt-10">
-          You need to{" "}
-          <a href="/login" className="text-blue-600 underline">
-            sign in
-          </a>{" "}
-          to view your collection.
-        </p>
+        <div className="text-center text-lg py-10">
+          <p>
+            You need to{" "}
+            <Link
+              href="/login"
+              className="text-blue-600 underline hover:text-blue-800 transition-colors font-semibold"
+            >
+              log in
+            </Link>{" "}
+            to view your collection.
+          </p>
+        </div>
       </div>
     );
-  }
+
+  const userId = user?.id || user?.email || user?.name;
+
+  const { favoriteIds } = useFavorites();
 
   const myRecipes = recipes.filter(
     (r) => String(r.authorId) === String(userId)
@@ -66,22 +66,18 @@ export default function MyCollectionPage() {
       <div className="w-full flex justify-center items-center"></div>
       <div className="p-4">
         {isEmpty ? (
-          <div className="text-center py-10">
-            <p>
+          <div className="text-center text-lg py-10 flex flex-col items-center gap-4">
+            <p className="mb-2">
               You don't have any recipes or favorite dishes yet.
-              <br />
-              <span className="text-gray-500">
-                Please{" "}
-                <a href="/login" className="text-blue-600 underline">
-                  sign in
-                </a>{" "}
-                or{" "}
-                <a href="/sign-up" className="text-blue-600 underline">
-                  sign up
-                </a>{" "}
-                to use this feature!
-              </span>
+              <br className="mt-20" />
+              Start exploring and adding your favorite recipes!
             </p>
+            <Link
+              href="/recipes"
+              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Explore Recipes
+            </Link>
           </div>
         ) : (
           <>
