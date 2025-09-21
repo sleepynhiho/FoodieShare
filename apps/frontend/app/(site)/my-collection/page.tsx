@@ -5,6 +5,7 @@ import { RecipeCard } from "@/components/RecipeCard";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useAuth } from "@/context/AuthContext";
 import { getUserRecipes } from "@/services/userService";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 import Link from "next/link";
 
 export default function MyCollectionPage() {
@@ -49,6 +50,7 @@ export default function MyCollectionPage() {
   const { favoriteRecipes } = useFavorites();
 
   const [myRecipes, setMyRecipes] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getMyRecipes = async () => {
     try {
@@ -56,8 +58,10 @@ export default function MyCollectionPage() {
       setMyRecipes(data);
     } catch (error) {
       console.error("Failed to fetch user recipes:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     getMyRecipes();
@@ -67,6 +71,7 @@ export default function MyCollectionPage() {
 
   return (
     <main className="w-full min-h-screen bg-white">
+      <LoadingSpinner loading={isLoading} />
       <img
         src="/recipe_list_banner.webp"
         alt="Recipe list banner"
@@ -96,7 +101,11 @@ export default function MyCollectionPage() {
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
-                  isFavorited={favoriteRecipes.find((r) => r.id === (String(recipe.id))) ? true : false}
+                  isFavorited={
+                    favoriteRecipes.find((r) => r.id === String(recipe.id))
+                      ? true
+                      : false
+                  }
                 />
               ))}
             </section>

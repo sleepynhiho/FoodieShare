@@ -17,6 +17,7 @@ import {
 import { GeneralInformation, Ingredients, Steps } from "./blocks";
 import { uploadImageClientSide } from "@/services/imageUploadService";
 import { createRecipe, CreateRecipeRequest } from "@/services/recipeService";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export default function NewRecipePage() {
   const giRef = React.useRef<GeneralInfoRef>(null);
@@ -132,6 +133,7 @@ export default function NewRecipePage() {
         }}
       />
       <form onSubmit={handlePublish} className="mx-auto max-w-6xl px-4 py-6">
+        <LoadingSpinner loading={isSubmitting} />
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2 text-muted-foreground">
