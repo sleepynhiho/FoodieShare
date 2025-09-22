@@ -45,8 +45,8 @@ const RecipeResult: React.FC<RecipeResultProps> = ({ recipe }) => {
             <h1 className="text-text-muted font-bold">{recipe.title}</h1>
             <p className="text-gray-400 text-sm font-medium">{`${formatCategory(
               recipe.category
-            )} . ${recipe.cookTime} ${
-              recipe.cookTime > 1 ? "minutes" : "minute"
+            )} . ${recipe.cookingTime} ${
+              recipe.cookingTime > 1 ? "minutes" : "minute"
             }`}</p>
           </div>
         </div>

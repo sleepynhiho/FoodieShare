@@ -43,7 +43,7 @@ export interface Recipe {
   title: string;
   description: string;
   prepTime: number; // minutes
-  cookTime: number; // minutes
+  cookingTime: number; // minutes
   servings: number; // number of servings
   difficulty: Difficulty;
   category: Category;
