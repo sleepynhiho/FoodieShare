@@ -83,7 +83,11 @@ cd apps/backend
 ```Bash
 pnpm install
 ```
-**3. Run the Backend**
+**3. Run migrations**
+```Bash
+pnpm prisma migrate deploy
+```
+**4. Run the Backend**
 ```Bash
 pnpm run start:dev
 ```
