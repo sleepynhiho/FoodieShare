@@ -12,7 +12,9 @@ FoodieShare is a recipe-sharing platform where users can browse, search, add new
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Installation](#installation)
+- [License](#license)
 
+<a id="team-information"></a>
 ## 🙆‍♀️ Team Information
 - **Team Name:** Devlicious
 - **Team Members:**
@@ -24,6 +26,7 @@ FoodieShare is a recipe-sharing platform where users can browse, search, add new
 | Nguyen Le Anh Xuan     | Fullstack  |
 | Nguyen Ngoc Nhu Huyen  | Fullstack  |
 
+<a id="features"></a>
 ## ✨ Features
 ### Recipe List Page
 - Display a list of recipes.
@@ -47,6 +50,7 @@ FoodieShare is a recipe-sharing platform where users can browse, search, add new
 - Random Recipe button.
 - Rating system.
 
+<a id="tech-stack"></a>
 ## 🛠 Tech Stack
 ### Frontend
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
@@ -60,6 +64,7 @@ FoodieShare is a recipe-sharing platform where users can browse, search, add new
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 
+<a id="installation"></a>
 ## ⚙️ Installation
 **Note:** Follow the .env.example files in the frontend and backend folders to setup environment properly.
 
@@ -96,6 +101,6 @@ pnpm install
 ```Bash
 pnpm dev
 ```
-
+<a id="license"></a>
 ## 📄 License
 This project is licensed under the [MIT License](LICENSE).
