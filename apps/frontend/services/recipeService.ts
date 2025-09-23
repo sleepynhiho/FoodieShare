@@ -97,6 +97,14 @@ export const getRecipes = async (params?: {
   search?: string;
   category?: string;
   difficulty?: string;
+  minPrepTime?: number;
+  maxPrepTime?: number;
+  minCookingTime?: number;
+  maxCookingTime?: number;
+  minServings?: number;
+  maxServings?: number;
+  minRating?: number;
+  authorId?: string;
   sortBy?: 'createdAt' | 'title' | 'prepTime' | 'cookingTime' | 'servings' | 'avgRating' | 'favoritesCount';
   sortOrder?: 'asc' | 'desc';
 }) => {
