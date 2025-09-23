@@ -101,8 +101,6 @@ export const getRecipes = async (params?: {
   maxPrepTime?: number;
   minCookingTime?: number;
   maxCookingTime?: number;
-  minServings?: number;
-  maxServings?: number;
   minRating?: number;
   authorId?: string;
   sortBy?: 'createdAt' | 'title' | 'prepTime' | 'cookingTime' | 'servings' | 'avgRating' | 'favoritesCount';

@@ -298,12 +298,17 @@ const RandomRecipeBox = () => {
                   src={selectedRecipe.image}
                   alt={selectedRecipe.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.src = '/default-recipe-clean.svg';
+                  }}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-100">
-                  <Soup size={24} />
-                  <span className="ml-2">No Image</span>
-                </div>
+                <img
+                  src="/default-recipe-clean.svg"
+                  alt="Default recipe"
+                  className="w-full h-full object-cover"
+                />
               )}
 
               {/* Gradient overlay */}

@@ -37,9 +37,13 @@ const RecipeResult: React.FC<RecipeResultProps> = ({ recipe }) => {
       <Link href={`/recipes/${recipe.id}`}>
         <div className="grid grid-cols-[auto,1fr] gap-4 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded-md">
           <img
-            src={recipe.image}
+            src={recipe.image || '/default-recipe-clean.svg'}
             alt={recipe.description}
             className="w-12 h-12 object-cover rounded-xl object-[70%_70%] md:object-center"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              target.src = '/default-recipe-clean.svg';
+            }}
           />
           <div className="grid grid-rows-2">
             <h1 className="text-text-muted font-bold">{recipe.title}</h1>

@@ -173,9 +173,13 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
       <div className="relative w-full rounded-lg overflow-hidden mb-6">
         <div className="relative">
           <img
-            src={recipe?.image}
+            src={recipe?.image || '/default-recipe-clean.svg'}
             alt={recipe?.description}
             className="w-full max-h-96 object-cover rounded-xl object-[70%_70%] md:object-center"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              target.src = '/default-recipe-clean.svg';
+            }}
           />
 
           <div
