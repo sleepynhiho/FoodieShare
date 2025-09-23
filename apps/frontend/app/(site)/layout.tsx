@@ -1,6 +1,6 @@
 "use client";
 
-import { Navbar } from "@/components/NavBar";
+import { Navbar } from "@/components/navbar";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import RandomRecipeBox from "@/components/RandomRecipeBox";
 
