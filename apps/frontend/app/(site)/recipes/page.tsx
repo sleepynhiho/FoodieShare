@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Category } from "@/types";
 import {
@@ -25,10 +25,11 @@ import {
 import { RecipeFilters } from "@/components/RecipeFilters";
 import { getRecipes } from "@/services/recipeService";
 import { useFavorites } from "@/context/FavoritesContext";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const categories = RECIPE_CATEGORIES;
 
-export default function RecipesPage() {
+function RecipesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -725,5 +726,13 @@ export default function RecipesPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function RecipesPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner loading={true} />}>
+      <RecipesContent />
+    </Suspense>
   );
 }

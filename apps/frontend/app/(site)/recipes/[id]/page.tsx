@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { submitRating } from "@/services/ratingsService";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
 import { useAuth } from "@/context/AuthContext";
+import type { Ingredient, RecipeStep } from "@/types/recipe";
 
 interface RecipePageProps {
   params: {
@@ -250,7 +251,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </h2>
             <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
               <ul className="mt-4 space-y-4">
-                {recipe?.ingredients.map((ingredient, index) => (
+                {recipe?.ingredients.map((ingredient: Ingredient, index: number) => (
                   <li
                     key={index}
                     className="flex justify-between items-center gap-4"
@@ -271,7 +272,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             </h2>
             <div className="mt-4 p-6 bg-bg-card rounded-lg shadow-[0_2px_12px_0_rgba(0,0,0,0.06)]">
               <ol className="mt-4 space-y-4">
-                {recipe?.steps.map((step, index) => (
+                {recipe?.steps.map((step: RecipeStep, index: number) => (
                   <li key={index} className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-bg-icon p-2 text-text-primary font-bold">
