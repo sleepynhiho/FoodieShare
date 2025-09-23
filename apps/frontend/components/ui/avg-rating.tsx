@@ -3,9 +3,13 @@ import { Star } from "lucide-react";
 interface RecipeAvgRatingProps {
   avgRating: number;
   ratingCount: number;
+  onDark?: boolean;
 }
 
-export default function RecipeAvgRating({ avgRating = 0, ratingCount = 0 }: RecipeAvgRatingProps) {
+export default function RecipeAvgRating({ avgRating = 0, ratingCount = 0, onDark = false }: RecipeAvgRatingProps) {
+  const textColor = onDark ? "text-white" : "text-text-muted";
+  const ratingTextColor = onDark ? "text-white" : "text-black";
+  
   return (
     <div className="flex items-center">
       {Array.from({ length: 5 }).map((_, i) => {
@@ -35,8 +39,8 @@ export default function RecipeAvgRating({ avgRating = 0, ratingCount = 0 }: Reci
           )
         }
       })}
-      <span className="ml-2 text-sm font-bold">{avgRating.toFixed(1)}</span>
-      <span className="ml-2 text-sm text-text-muted">{`(${ratingCount} ${ratingCount > 1 ? "reviews" : "review"})`}</span>
+      <span className={`ml-2 text-sm font-bold ${ratingTextColor}`}>{avgRating.toFixed(1)}</span>
+      <span className={`ml-2 text-sm ${textColor}`}>{`(${ratingCount} ${ratingCount > 1 ? "reviews" : "review"})`}</span>
     </div>
   )
 }

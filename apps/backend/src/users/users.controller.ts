@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Req, UseGuards, Param } from "@nestjs/common";
 import { AuthGuard } from "src/auth/auth.guard";
 import type { Request } from "express";
 import { UsersService } from "./users.service";
@@ -30,5 +30,10 @@ export class UserController {
   @UseGuards(AuthGuard)
   async getUserFavorites(@Req() req: Request) {
     return this.usersService.getUserFavorites(req.user.id);
+  }
+
+  @Get(":userId/recipe-count")
+  async getUserRecipeCount(@Param("userId") userId: string) {
+    return this.usersService.getUserRecipeCount(userId);
   }
 }

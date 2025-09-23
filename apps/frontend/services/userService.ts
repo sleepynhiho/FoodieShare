@@ -19,3 +19,13 @@ export const getUserRecipes = async () => {
     throw error;
   }
 }
+
+export const getUserRecipeCount = async (userId: string) => {
+  try {
+    const response = await axiosClient.get(`/users/${userId}/recipe-count`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user recipe count:', error);
+    throw error;
+  }
+}
