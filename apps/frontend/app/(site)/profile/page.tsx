@@ -317,21 +317,21 @@ export default function ProfilePage() {
             <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                     <Input
                       id="email"
                       type="email"
                       value={profile.email}
                       disabled
-                      className="bg-gray-50"
+                      className="bg-gray-50 mt-1.5"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 mt-1.5">
                       Email cannot be changed
                     </p>
                   </div>
-                  <div>
-                    <Label htmlFor="username">Username</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-medium">Username</Label>
                     <Input
                       id="username"
                       type="text"
@@ -339,6 +339,7 @@ export default function ProfilePage() {
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Enter your username"
                       required
+                      className="mt-1.5"
                     />
                   </div>
                 </div>
@@ -368,9 +369,9 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdatePassword} className="space-y-4">
-                <div>
-                  <Label htmlFor="currentPassword">Current Password</Label>
-                  <div className="relative">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword" className="text-sm font-medium">Current Password</Label>
+                  <div className="relative mt-1.5">
                     <Input
                       id="currentPassword"
                       type={showPasswords.current ? "text" : "password"}
@@ -399,9 +400,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <div className="relative">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword" className="text-sm font-medium">New Password</Label>
+                    <div className="relative mt-1.5">
                       <Input
                         id="newPassword"
                         type={showPasswords.new ? "text" : "password"}
@@ -431,9 +432,9 @@ export default function ProfilePage() {
                       Minimum 6 characters
                     </p>
                   </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <div className="relative">
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm New Password</Label>
+                    <div className="relative mt-1.5">
                       <Input
                         id="confirmPassword"
                         type={showPasswords.confirm ? "text" : "password"}
