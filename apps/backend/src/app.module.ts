@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { RatingsModule } from './ratings/ratings.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     UsersModule,
     RecipesModule,
     RatingsModule,
-    CloudinaryModule
+    CloudinaryModule,
+    StatsModule
   ],
   controllers: [AppController],
   providers: [AppService]
