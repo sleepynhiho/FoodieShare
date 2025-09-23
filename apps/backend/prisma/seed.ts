@@ -1281,7 +1281,7 @@ async function main() {
         "A healthy layered breakfast with yogurt, granola, and fresh berries.",
       image:
         "https://images.unsplash.com/photo-1597305498327-96b61c3640fb?w=800&h=600&fit=crop",
-      category: "Breakfast",
+      category: "MainDish",
       cookingTime: 5,
       prepTime: 5,
       servings: 1,
@@ -1346,7 +1346,7 @@ async function main() {
         "Fluffy pancakes infused with ripe bananas, perfect for breakfast.",
       image:
         "https://images.unsplash.com/photo-1598515213696-1f4782555026?w=800&h=600&fit=crop",
-      category: "Breakfast",
+      category: "MainDish",
       cookingTime: 15,
       prepTime: 10,
       servings: 3,
@@ -1614,7 +1614,7 @@ async function main() {
         "A creamy and refreshing smoothie made with ripe mangoes and yogurt.",
       image:
         "https://images.unsplash.com/photo-1617196039897-959b0360f902?w=800&h=600&fit=crop",
-      category: "Drink",
+      category: "Beverage",
       cookingTime: 5,
       prepTime: 5,
       servings: 2,
@@ -1725,7 +1725,7 @@ async function main() {
         "Creamy smashed avocado on toasted bread topped with a soft poached egg.",
       image:
         "https://images.unsplash.com/photo-1572441710534-6801d9f3fc6f?w=800&h=600&fit=crop",
-      category: "Breakfast",
+      category: "MainDish",
       cookingTime: 10,
       prepTime: 5,
       servings: 1,

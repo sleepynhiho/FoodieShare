@@ -34,7 +34,7 @@ async function main() {
     const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)]
 
     // random category
-    const category = faker.helpers.arrayElement(['MainDish', 'Dessert', 'Appetizer', 'Drink'])
+    const category = faker.helpers.arrayElement(['MainDish', 'Dessert', 'Appetizer', 'Salad', 'Beverage', 'Soup'])
 
     // ingredients random
     const ingredients = Array.from({ length: faker.number.int({ min: 3, max: 8 }) }).map(() => ({
