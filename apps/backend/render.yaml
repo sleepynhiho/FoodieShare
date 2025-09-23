@@ -1,8 +1,8 @@
 # Render Configuration for NestJS Backend
 # Place this file in the root of your backend directory (apps/backend/)
 
-buildCommand: npm install && npm run build && npx prisma generate && npx prisma migrate deploy
-startCommand: npm run start:prod
+buildCommand: corepack enable && pnpm install && pnpm run build && pnpm exec prisma generate && pnpm exec prisma migrate deploy
+startCommand: pnpm run start:prod
 
 services:
   - type: web
@@ -10,8 +10,8 @@ services:
     env: node
     region: singapore # or your preferred region
     plan: free # or starter/standard based on your needs
-    buildCommand: npm install && npm run build && npx prisma generate && npx prisma migrate deploy
-    startCommand: npm run start:prod
+    buildCommand: corepack enable && pnpm install && pnpm run build && pnpm exec prisma generate && pnpm exec prisma migrate deploy
+    startCommand: pnpm run start:prod
     envVars:
       - key: NODE_ENV
         value: production
