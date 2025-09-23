@@ -1,5 +1,3 @@
-// Remove server-side cloudinary import to avoid 'fs' module issues in browser
-// import { v2 as cloudinary } from 'cloudinary';
 
 export interface CloudinaryUploadResult {
   public_id: string;
