@@ -1,7 +1,6 @@
-// app/(site)/layout.tsx
 "use client";
 
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/NavBar";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import RandomRecipeBox from "@/components/RandomRecipeBox";
 

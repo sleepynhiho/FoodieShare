@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { submitRating } from "@/services/ratingsService";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
 import { useAuth } from "@/context/AuthContext";
+import { getUserRecipeCount } from "@/services/userService";
 import type { Ingredient, RecipeStep } from "@/types/recipe";
 
 interface RecipePageProps {
@@ -27,6 +28,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
 
   // State management
   const [recipe, setRecipe] = useState<any>(null)
+  const [authorRecipeCount, setAuthorRecipeCount] = useState<number>(0)
   const [ratingStats, setRatingStats] = useState({
     averageRating: 0,
     totalRatings: 0,
@@ -90,6 +92,13 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         totalRatings: ratingData.totalRatings,
         userRating: ratingData.userRating
       })
+
+      // Load author's recipe count
+      if (recipeData?.author?.id || recipeData?.userId) {
+        const authorId = recipeData.author?.id || recipeData.userId;
+        const recipeCountData = await getUserRecipeCount(authorId);
+        setAuthorRecipeCount(recipeCountData.count);
+      }
     } catch (err: any) {
       console.error("Error loading recipe data:", err)
       setError(err.message || "Failed to load recipe details")
@@ -149,13 +158,48 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
     recipe?.author?.username || "Unknown Chef"
   ]
 
+  // Author Icon Component
+  const AuthorIcon = () => {
+    // According to our types, the avatar should be in recipe.author.avatar
+    const avatarUrl = recipe?.author?.avatar;
+    
+    if (avatarUrl && avatarUrl.length > 0) {
+      return (
+        <div className="w-8 h-8 rounded-full overflow-hidden">
+          <img
+            src={avatarUrl}
+            alt={recipe?.author?.username || "Author"}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              target.style.display = 'none';
+              // Show User icon as fallback if image fails to load
+              const parent = target.parentElement;
+              if (parent) {
+                const fallback = document.createElement('div');
+                fallback.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffa319" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                parent.appendChild(fallback);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+    
+    return (
+      <div className="w-8 h-8 rounded-full flex items-center justify-center">
+        <User size={24} color="#ffa319" />
+      </div>
+    );
+  };
+
   const icons = [
     <Soup size={16} color="#ffa319" />,
     <HandPlatter size={16} color="#ffa319" />,
     <Clock size={16} color="#ffa319" />,
     <ChefHat size={16} color="#ffa319" />,
     <Star size={16} color="#ffa319" />,
-    <User size={16} color="#ffa319" />
+    <AuthorIcon />
   ]
 
   const recipeValues = [
@@ -164,7 +208,7 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
     recipe?.prepTime + " Minutes",
     recipe?.cookingTime + " Minutes",
     recipe?.difficulty,
-    "0 Recipes" // TODO: Add recipe count to author data from backend
+    authorRecipeCount === 1 ? "1 Recipe" : `${authorRecipeCount} Recipes`
   ]
 
   return (
@@ -173,9 +217,13 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
       <div className="relative w-full rounded-lg overflow-hidden mb-6">
         <div className="relative">
           <img
-            src={recipe?.image}
+            src={recipe?.image || '/default-recipe-clean.svg'}
             alt={recipe?.description}
             className="w-full max-h-96 object-cover rounded-xl object-[70%_70%] md:object-center"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              target.src = '/default-recipe-clean.svg';
+            }}
           />
 
           <div
@@ -188,6 +236,15 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             <h1 className="text-white text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold">
               {recipe?.title}
             </h1>
+            
+            {/* Rating on image overlay */}
+            <div className="mt-2 flex items-center gap-2">
+              <RecipeAvgRating
+                avgRating={ratingStats.averageRating || 0}
+                ratingCount={ratingStats.totalRatings || 0}
+                onDark={true}
+              />
+            </div>
           </div>
         </div>
         <div
@@ -204,13 +261,6 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
         </div>
       </div>
 
-      <div className="flex flex-col justify-center items-center gap-4 mb-6">
-        <RecipeAvgRating
-          avgRating={ratingStats.averageRating || 0}
-          ratingCount={ratingStats.totalRatings || 0}
-        />
-      </div>
-
       {/* Recipe Fields */}
       <div
         className="
@@ -225,13 +275,25 @@ export default function RecipeDetailPage({ params }: RecipePageProps) {
             key={index}
             className="grid grid-cols-[max-content_1fr] items-center justify-center gap-3"
           >
-            <div className="rounded-full bg-bg-icon p-2 w-8 h-8">
-              {icons[index]}
-            </div>
-            <div className="grid grid-rows-2">
-              <p className="text-sm text-gray-400">{field}</p>
-              <p className="text-base font-bold">{recipeValues[index]}</p>
-            </div>
+            {index === 5 ? ( // Author field
+              <>
+                {icons[index]}
+                <div className="grid grid-rows-2">
+                  <p className="text-sm text-gray-400 font-medium">{field}</p>
+                  <p className="text-sm text-text-primary hover:text-orange-500 transition-colors cursor-pointer">{recipeValues[index]}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="rounded-full bg-bg-icon p-2 w-8 h-8 flex items-center justify-center">
+                  {icons[index]}
+                </div>
+                <div className="grid grid-rows-2">
+                  <p className="text-sm text-gray-400">{field}</p>
+                  <p className="text-base font-bold">{recipeValues[index]}</p>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

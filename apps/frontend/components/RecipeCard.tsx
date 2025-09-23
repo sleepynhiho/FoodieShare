@@ -44,24 +44,18 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
                   style={{ minHeight: "120px", maxHeight: "180px" }}
                   onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    const fallback = e.currentTarget
-                      .nextElementSibling as HTMLElement | null;
-                    if (fallback) fallback.style.display = "flex";
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.src = '/default-recipe-clean.svg';
                   }}
                 />
-              ) : null}
-              {/* Fallback for missing or error image */}
-              <div
-                className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-100"
-                style={{
-                  display: recipe.image ? "none" : "flex",
-                  minHeight: "120px",
-                  maxHeight: "180px",
-                }}
-              >
-                No Image
-              </div>
+              ) : (
+                <img
+                  src="/default-recipe-clean.svg"
+                  alt="Default recipe"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ minHeight: "120px", maxHeight: "180px" }}
+                />
+              )}
             </div>
             <div className="p-4 flex flex-col h-[180px]">
               <div className="flex items-center gap-2 mb-2">

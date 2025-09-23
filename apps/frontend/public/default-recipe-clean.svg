@@ -1,0 +1,77 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with subtle gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="plateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f1f3f4;stop-opacity:1" />
+    </linearGradient>
+    <filter id="plateShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+    <filter id="itemShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  
+  <rect width="400" height="300" fill="url(#bgGradient)"/>
+  
+  <!-- Main plate -->
+  <ellipse cx="200" cy="180" rx="120" ry="15" fill="#dee2e6" opacity="0.3"/>
+  <ellipse cx="200" cy="175" rx="115" ry="115" fill="url(#plateGradient)" filter="url(#plateShadow)"/>
+  <ellipse cx="200" cy="175" rx="105" ry="105" fill="none" stroke="#e9ecef" stroke-width="2"/>
+  
+  <!-- Food items on plate -->
+  <!-- Main dish (circular) -->
+  <circle cx="200" cy="175" r="45" fill="#ff6b35" opacity="0.8" filter="url(#itemShadow)"/>
+  <circle cx="200" cy="175" r="35" fill="#ffa319" opacity="0.9"/>
+  <circle cx="185" cy="165" r="8" fill="#ff8c42" opacity="0.7"/>
+  <circle cx="210" cy="185" r="6" fill="#ff8c42" opacity="0.7"/>
+  <circle cx="205" cy="160" r="5" fill="#ff8c42" opacity="0.7"/>
+  
+  <!-- Side items -->
+  <ellipse cx="160" cy="195" rx="18" ry="12" fill="#28a745" opacity="0.8" filter="url(#itemShadow)"/>
+  <ellipse cx="240" cy="195" rx="18" ry="12" fill="#28a745" opacity="0.8" filter="url(#itemShadow)"/>
+  <ellipse cx="180" cy="145" rx="12" ry="8" fill="#ffc107" opacity="0.8" filter="url(#itemShadow)"/>
+  <ellipse cx="220" cy="145" rx="12" ry="8" fill="#ffc107" opacity="0.8" filter="url(#itemShadow)"/>
+  
+  <!-- Garnish dots -->
+  <circle cx="170" cy="170" r="3" fill="#dc3545" opacity="0.6"/>
+  <circle cx="230" cy="180" r="3" fill="#dc3545" opacity="0.6"/>
+  <circle cx="190" cy="190" r="2" fill="#198754" opacity="0.7"/>
+  <circle cx="215" cy="165" r="2" fill="#198754" opacity="0.7"/>
+  
+  <!-- Cutlery -->
+  <!-- Fork on left -->
+  <g transform="translate(80, 120)" filter="url(#itemShadow)">
+    <rect x="0" y="0" width="3" height="80" fill="#6c757d" opacity="0.8"/>
+    <rect x="-2" y="0" width="2" height="15" fill="#6c757d" opacity="0.8"/>
+    <rect x="3" y="0" width="2" height="15" fill="#6c757d" opacity="0.8"/>
+    <rect x="-4" y="0" width="2" height="12" fill="#6c757d" opacity="0.8"/>
+    <rect x="5" y="0" width="2" height="12" fill="#6c757d" opacity="0.8"/>
+  </g>
+  
+  <!-- Knife on right -->
+  <g transform="translate(315, 120)" filter="url(#itemShadow)">
+    <rect x="0" y="0" width="3" height="80" fill="#6c757d" opacity="0.8"/>
+    <path d="M0 0 L8 0 L8 20 L3 20 Z" fill="#adb5bd" opacity="0.9"/>
+  </g>
+  
+  <!-- Decorative elements around the plate -->
+  <circle cx="120" cy="100" r="2" fill="#ffa319" opacity="0.3"/>
+  <circle cx="280" cy="90" r="2.5" fill="#ff6b35" opacity="0.3"/>
+  <circle cx="100" cy="240" r="1.5" fill="#28a745" opacity="0.3"/>
+  <circle cx="300" cy="250" r="2" fill="#28a745" opacity="0.3"/>
+  <circle cx="320" cy="110" r="1.8" fill="#ffc107" opacity="0.3"/>
+  <circle cx="80" cy="260" r="2.2" fill="#ffc107" opacity="0.3"/>
+  
+  <!-- Steam lines -->
+  <g opacity="0.2">
+    <path d="M180 120 Q185 110 180 100 Q175 90 180 80" stroke="#6c757d" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M200 115 Q205 105 200 95 Q195 85 200 75" stroke="#6c757d" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M220 120 Q225 110 220 100 Q215 90 220 80" stroke="#6c757d" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

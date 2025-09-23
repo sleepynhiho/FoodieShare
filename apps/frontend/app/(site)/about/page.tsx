@@ -1,15 +1,57 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Users, Heart, Star, ChefHat, Globe, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getAppStats } from "@/services/statsService";
 
 export default function AboutPage() {
+  const [appStats, setAppStats] = useState({
+    totalRecipes: 0,
+    totalUsers: 0,
+    totalRatings: 0,
+    avgRating: 0,
+    totalFavorites: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const stats = await getAppStats();
+        setAppStats(stats);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, []);
+
   const stats = [
-    { label: "Recipes Shared", value: "1,000+", icon: <ChefHat className="h-6 w-6" /> },
-    { label: "Food Lovers", value: "5,000+", icon: <Users className="h-6 w-6" /> },
-    { label: "Countries", value: "50+", icon: <Globe className="h-6 w-6" /> },
-    { label: "Average Rating", value: "4.8", icon: <Star className="h-6 w-6" /> },
+    { 
+      label: "Recipes Shared", 
+      value: loading ? "..." : `${appStats.totalRecipes}+`, 
+      icon: <ChefHat className="h-6 w-6 text-orange-500" /> 
+    },
+    { 
+      label: "Food Lovers", 
+      value: loading ? "..." : `${appStats.totalUsers}+`, 
+      icon: <Users className="h-6 w-6 text-blue-500" /> 
+    },
+    { 
+      label: "Total Reviews", 
+      value: loading ? "..." : `${appStats.totalRatings}+`, 
+      icon: <Star className="h-6 w-6 text-yellow-500" /> 
+    },
+    { 
+      label: "Total Favorites", 
+      value: loading ? "..." : `${appStats.totalFavorites}+`, 
+      icon: <Heart className="h-6 w-6 text-red-500" /> 
+    }
   ];
 
   const features = [
@@ -45,14 +87,14 @@ export default function AboutPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="grid md:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="text-center p-6 bg-gray-50 rounded-lg">
-            <div className="flex justify-center mb-3 text-orange-500">
+          <div key={index} className="text-center p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+            <div className="inline-flex justify-center items-center mb-4 p-3 rounded-full bg-gray-50">
               {stat.icon}
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-            <div className="text-gray-600">{stat.label}</div>
+            <div className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
+            <div className="text-gray-600 font-medium">{stat.label}</div>
           </div>
         ))}
       </section>

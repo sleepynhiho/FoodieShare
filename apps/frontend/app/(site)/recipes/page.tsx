@@ -299,14 +299,6 @@ function RecipesContent() {
     setSortOrder(getInitialSortOrder());
   }, [searchParams]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    if (currentPage > 1) {
-      setCurrentPage(1);
-      updateURL({ page: 1 });
-    }
-  }, [selectedCategory, filters.difficulty, filters.minRating, filters.sortBy, filters.sortOrder, filters.minCookTime, filters.maxCookTime, filters.minPrepTime, filters.maxPrepTime]);
-
   // Close sort dropdown when clicking outside
   useEffect(() => {
     if (!showSortDropdown) return;

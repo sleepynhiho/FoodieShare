@@ -70,18 +70,6 @@ export class GetRecipesQueryDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  @Min(1)
-  minServings?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  maxServings?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
   @Min(0)
   @Max(5)
   minRating?: number;

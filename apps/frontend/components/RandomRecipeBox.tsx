@@ -155,15 +155,24 @@ const RandomRecipeBox = () => {
       {/* Tooltip */}
       {tooltipVisible && (
         <div
-          className="absolute bottom-20 right-0 bg-gray-900/90 backdrop-blur-sm text-white p-3 rounded-lg w-52 shadow-xl
-                     animate-fade-in border border-gray-700"
+          className="absolute bottom-20 right-0 bg-gradient-to-br from-gray-900 to-gray-800/95 backdrop-blur-md text-white p-4 rounded-xl w-64 shadow-2xl
+                     animate-fade-in border border-amber-500/30 overflow-hidden"
         >
-          <p className="text-xs">🎲 Discover a surprise recipe!</p>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-xl -mr-8 -mt-8"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-amber-500/10 rounded-full blur-lg -ml-5 -mb-5"></div>
+          
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-amber-400 text-lg">✨</span>
+            <h4 className="font-medium text-sm text-amber-50">Not sure what to cook?</h4>
+          </div>
+          <p className="text-xs text-gray-300 leading-relaxed">
+            Click here for a delicious surprise recipe to inspire your next meal!
+          </p>
           <div
             className="absolute -bottom-2 right-6 w-0 h-0 
-                         border-l-[6px] border-l-transparent 
-                         border-t-[6px] border-t-gray-900/90 
-                         border-r-[6px] border-r-transparent"
+                      border-l-[8px] border-l-transparent 
+                      border-t-[8px] border-t-gray-800 
+                      border-r-[8px] border-r-transparent"
           />
         </div>
       )}
@@ -298,12 +307,17 @@ const RandomRecipeBox = () => {
                   src={selectedRecipe.image}
                   alt={selectedRecipe.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.src = '/default-recipe-clean.svg';
+                  }}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-100">
-                  <Soup size={24} />
-                  <span className="ml-2">No Image</span>
-                </div>
+                <img
+                  src="/default-recipe-clean.svg"
+                  alt="Default recipe"
+                  className="w-full h-full object-cover"
+                />
               )}
 
               {/* Gradient overlay */}
