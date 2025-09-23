@@ -51,20 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     registerTokenGetter(() => token);
   }, [token]);
 
-  const onLogoutRequired = useCallback(() => {
-    setIsAuthenticated(false);
-    setUser(null);
-    setToken(null);
-    router.push("/login");
-  }, [router]);
-
-  useEffect(() => {
-    window.addEventListener("auth:logout-required", onLogoutRequired as EventListener);
-    return () => {
-      window.removeEventListener("auth:logout-required", onLogoutRequired as EventListener);
-    };
-  }, [onLogoutRequired]);
-
   const showAuthModal = useCallback(() => setIsModalOpen(true), []);
   const hideAuthModal = useCallback(() => setIsModalOpen(false), []);
 

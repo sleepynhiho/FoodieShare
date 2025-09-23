@@ -71,9 +71,6 @@ axiosClient.interceptors.response.use(
         // Clear the login session
         delete axiosClient.defaults.headers.common.Authorization;
         setTokenFromOutside(null);
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("auth:logout-required"));
-        }
 
         return Promise.reject(e);
       } finally {
