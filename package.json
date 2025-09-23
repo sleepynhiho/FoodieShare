@@ -2,6 +2,7 @@
   "name": "foodieshare",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "pnpm@10.17.1",
   "description": "FoodieShare monorepo: Next.js frontend, TS Express backend, shared packages",
   "workspaces": [
     "apps/*",
