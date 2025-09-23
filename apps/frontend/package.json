@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "deploy:vercel": "vercel --prod",
+    "deploy:check": "pnpm run build && pnpm run typecheck",
+    "preview": "vercel dev"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
