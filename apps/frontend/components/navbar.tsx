@@ -141,8 +141,8 @@ export function Navbar() {
           <NavLink href="/about" active={pathname === "/about"}>
             About
           </NavLink>
-          <NavLink href="/my-collection" active={pathname === "/my-collection"}>
-            My Collection
+          <NavLink href="/collection" active={pathname === "/collection"}>
+            Collection
           </NavLink>
         </nav>
 
@@ -271,11 +271,11 @@ export function Navbar() {
                   About
                 </NavLink>
                 <NavLink
-                  href="/my-collection"
-                  active={pathname === "/my-collection"}
+                  href="/collection"
+                  active={pathname === "/collection"}
                   onClick={toggleSidebar}
                 >
-                  My Collection
+                  Collection
                 </NavLink>
               </nav>
               <div className="mt-auto pt-4 space-y-3">

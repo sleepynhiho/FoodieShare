@@ -39,16 +39,6 @@ export const RATING_CONSTANTS = {
   DEFAULT_SCORE: 0
 };
 
-// API endpoints (for future use)
-export const API_ENDPOINTS = {
-  RECIPES: '/api/recipes',
-  USERS: '/api/users',
-  AUTH: '/api/auth',
-  FAVORITES: '/api/favorites',
-  RATINGS: '/api/ratings',
-  COLLECTIONS: '/api/collections'
-};
-
 // Image upload settings
 export const IMAGE_SETTINGS = {
   MAX_SIZE: 5 * 1024 * 1024, // 5MB

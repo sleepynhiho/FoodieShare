@@ -55,4 +55,14 @@ export class UsersService {
 
     return favoriteRecipes;
   }
+
+  async getUserRecipeCount(userId: string) {
+    const recipeCount = await this.prisma.recipe.count({
+      where: {
+        userId: userId,
+      },
+    });
+
+    return { count: recipeCount };
+  }
 }

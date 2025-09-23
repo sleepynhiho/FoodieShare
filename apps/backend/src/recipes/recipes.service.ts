@@ -103,8 +103,6 @@ export class RecipesService {
       maxPrepTime,
       minCookingTime,
       maxCookingTime,
-      minServings,
-      maxServings,
       minRating,
       authorId,
       sortBy = 'createdAt',
@@ -139,13 +137,6 @@ export class RecipesService {
     }
     if (maxCookingTime !== undefined) {
       where.cookingTime = { ...where.cookingTime, lte: maxCookingTime };
-    }
-
-    if (minServings !== undefined) {
-      where.servings = { ...where.servings, gte: minServings };
-    }
-    if (maxServings !== undefined) {
-      where.servings = { ...where.servings, lte: maxServings };
     }
 
     if (minRating !== undefined) {
