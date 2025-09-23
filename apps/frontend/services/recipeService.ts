@@ -97,6 +97,8 @@ export const getRecipes = async (params?: {
   search?: string;
   category?: string;
   difficulty?: string;
+  sortBy?: 'createdAt' | 'title' | 'prepTime' | 'cookingTime' | 'servings' | 'avgRating' | 'favoritesCount';
+  sortOrder?: 'asc' | 'desc';
 }) => {
   try {
     const response = await axiosClient.get('/recipes', { params });
@@ -148,6 +150,40 @@ export const updateRecipe = async (id: string, data: Partial<CreateRecipeRequest
 };
 
 /**
+ * Get featured recipes (top-rated)
+ */
+export const getFeaturedRecipes = async (limit: number = 6) => {
+  return getRecipes({
+    limit,
+    sortBy: 'avgRating',
+    sortOrder: 'desc'
+  });
+};
+
+/**
+ * Get latest recipes (most recent)
+ */
+export const getLatestRecipes = async (limit: number = 6) => {
+  return getRecipes({
+    limit,
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  });
+};
+
+/**
+ * Get trending recipes (most favorited)
+ */
+export const getTrendingRecipes = async (limit: number = 6) => {
+  return getRecipes({
+    limit,
+    sortBy: 'favoritesCount',
+    sortOrder: 'desc'
+  });
+};
+
+/**
+
  * Delete a recipe
  */
 export const deleteRecipe = async (id: string) => {

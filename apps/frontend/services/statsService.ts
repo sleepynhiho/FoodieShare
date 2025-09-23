@@ -13,6 +13,15 @@ export interface CategoryStats {
   count: number;
 }
 
+export interface TopAuthor {
+  id: string;
+  username: string;
+  avatar?: string;
+  recipeCount: number;
+  avgRating: number;
+  totalFavorites: number;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -24,28 +33,21 @@ export interface UserProfile {
 
 /**
  * Get application statistics
- * Note: This would need to be implemented in the backend
- * For now, we'll calculate from available data
  */
 export const getAppStats = async (): Promise<AppStats> => {
   try {
-    // For now, we'll make multiple API calls to get the data
-    // In the future, consider creating a dedicated stats endpoint
-    const recipesResponse = await axiosClient.get('/recipes', { params: { limit: 1 } });
-    const totalRecipes = recipesResponse.data.total || 0;
-    
-    // TODO: Add endpoints for user count, total ratings, etc.
-    // For now, return basic data
-    return {
-      totalRecipes,
-      totalUsers: 0, // Would need /users/count endpoint
-      totalRatings: 0, // Would need /ratings/count endpoint  
-      avgRating: 0, // Would need /ratings/average endpoint
-      totalFavorites: 0, // Would need /favorites/count endpoint
-    };
+    const response = await axiosClient.get('/stats/app');
+    return response.data;
   } catch (error) {
     console.error('Error fetching app stats:', error);
-    throw error;
+    // Return default values on error
+    return {
+      totalRecipes: 0,
+      totalUsers: 0,
+      totalRatings: 0,
+      avgRating: 0,
+      totalFavorites: 0,
+    };
   }
 };
 
@@ -54,25 +56,24 @@ export const getAppStats = async (): Promise<AppStats> => {
  */
 export const getCategoryStats = async (): Promise<CategoryStats[]> => {
   try {
-    // Get all recipes grouped by category
-    // This would ideally be a dedicated endpoint
-    const response = await axiosClient.get('/recipes', { params: { limit: 1000 } });
-    const recipes = response.data.data || [];
-    
-    // Count recipes per category
-    const categoryMap = new Map<string, number>();
-    recipes.forEach((recipe: any) => {
-      const category = recipe.category;
-      categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-    });
-    
-    return Array.from(categoryMap.entries()).map(([name, count]) => ({
-      name,
-      count
-    }));
+    const response = await axiosClient.get('/stats/categories');
+    return response.data;
   } catch (error) {
     console.error('Error fetching category stats:', error);
-    throw error;
+    return [];
+  }
+};
+
+/**
+ * Get top authors
+ */
+export const getTopAuthors = async (limit: number = 10): Promise<TopAuthor[]> => {
+  try {
+    const response = await axiosClient.get('/stats/top-authors', { params: { limit } });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching top authors:', error);
+    return [];
   }
 };
 
