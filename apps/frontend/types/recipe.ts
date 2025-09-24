@@ -97,6 +97,7 @@ export enum IngredientUnit {
 export type GeneralInfoRef = {
   getData: () => GeneralInfo;
   getImageFile: () => File | null;
+  getExistingImageUrl: () => string;
 };
 
 export type IngredientsRef = {

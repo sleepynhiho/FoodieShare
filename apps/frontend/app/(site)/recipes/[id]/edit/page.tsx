@@ -102,7 +102,7 @@ export default function EditRecipePage() {
         return;
       }
 
-      let imageUrl: string | undefined = recipe.image;
+      let imageUrl: string | undefined;
 
       // Upload new image if provided
       const imageFile = giRef.current?.getImageFile();
@@ -116,6 +116,9 @@ export default function EditRecipePage() {
           toast.error('Failed to upload image. Please try again.', { id: 'upload' });
           return;
         }
+      } else {
+        // Use existing image if no new image uploaded
+        imageUrl = giRef.current?.getExistingImageUrl() || undefined;
       }
 
       // Prepare recipe data
