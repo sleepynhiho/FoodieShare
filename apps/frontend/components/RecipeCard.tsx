@@ -85,13 +85,13 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               )}
             </div>
             <div className="p-4 flex flex-col h-[180px]">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-base font-semibold truncate">
+              <div className="flex items-center gap-2 mb-2 min-w-0">
+                <h2 className="text-base font-semibold truncate flex-1 min-w-0">
                   {recipe.title}
                 </h2>
                 {/* Category badge */}
                 {recipe.category && (
-                  <span className="px-1 py-0.3 rounded-sm text-gray-700 font-normal text-[10px] bg-[#ffe4b5]">
+                  <span className="px-1 py-0.3 rounded-sm text-gray-700 font-normal text-[10px] bg-[#ffe4b5] whitespace-nowrap flex-shrink-0">
                     {CATEGORY_DISPLAY_NAMES[recipe.category as keyof typeof CATEGORY_DISPLAY_NAMES] || recipe.category}
                   </span>
                 )}
