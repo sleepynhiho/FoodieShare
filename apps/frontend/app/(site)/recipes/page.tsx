@@ -703,6 +703,12 @@ function RecipesContent() {
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
+                  onRecipeDeleted={(recipeId) => {
+                    // Remove the deleted recipe from local state and reload
+                    setRecipes(prev => prev.filter(r => r.id !== recipeId));
+                    // Optionally reload the data to get accurate counts
+                    loadRecipes();
+                  }}
                 />
               ))
             )}

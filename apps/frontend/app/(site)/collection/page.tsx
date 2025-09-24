@@ -52,6 +52,11 @@ export default function MyCollectionPage() {
     }
   };
 
+  const handleRecipeDeleted = (recipeId: string) => {
+    // Remove the deleted recipe from the local state
+    setMyRecipes(prev => prev.filter(recipe => recipe.id !== recipeId));
+  };
+
   useEffect(() => {
     getMyRecipes();
   }, []);
@@ -127,6 +132,7 @@ export default function MyCollectionPage() {
                         ? true
                         : false
                     }
+                    onRecipeDeleted={handleRecipeDeleted}
                   />
                 ))}
               </section>
@@ -150,6 +156,7 @@ export default function MyCollectionPage() {
                     key={recipe.id}
                     recipe={recipe}
                     isFavorited={true}
+                    onRecipeDeleted={handleRecipeDeleted}
                   />
                 ))}
               </div>

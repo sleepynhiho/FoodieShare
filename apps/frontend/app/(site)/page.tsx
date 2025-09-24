@@ -420,7 +420,16 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe}
+                onRecipeDeleted={(recipeId) => {
+                  // Remove from all recipe lists and reload data
+                  setFeaturedRecipes(prev => prev.filter(r => r.id !== recipeId));
+                  setLatestRecipes(prev => prev.filter(r => r.id !== recipeId));
+                  setTrendingRecipes(prev => prev.filter(r => r.id !== recipeId));
+                }}
+              />
             ))}
           </div>
         )}
@@ -460,7 +469,16 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {latestRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe}
+                onRecipeDeleted={(recipeId) => {
+                  // Remove from all recipe lists
+                  setFeaturedRecipes(prev => prev.filter(r => r.id !== recipeId));
+                  setLatestRecipes(prev => prev.filter(r => r.id !== recipeId));
+                  setTrendingRecipes(prev => prev.filter(r => r.id !== recipeId));
+                }}
+              />
             ))}
           </div>
         )}
@@ -500,7 +518,16 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {trendingRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe}
+                onRecipeDeleted={(recipeId) => {
+                  // Remove from all recipe lists
+                  setFeaturedRecipes(prev => prev.filter(r => r.id !== recipeId));
+                  setLatestRecipes(prev => prev.filter(r => r.id !== recipeId));
+                  setTrendingRecipes(prev => prev.filter(r => r.id !== recipeId));
+                }}
+              />
             ))}
           </div>
         )}
